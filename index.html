@@ -1,0 +1,2480 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance — Учет семейного капитала и недвижимости</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js для графиков себестоимости -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Шрифты Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dynastyBg: '#F4F4F6',      // Светлый фон с фото лендинга
+                        dynastyBlack: '#0B0B0E',   // Глубокий обсидиановый черный для контраста
+                        dynastyLime: '#C6F31F',    // Яркий неоново-лаймовый акцент (chartreuse)
+                        dynastyPurple: '#A594F9',  // Тот самый глянцевый фиолетовый с фото MIND
+                        dynastyPurpleHover: '#8B7AF4',
+                        creamSoft: 'rgba(255, 255, 255, 0.9)', // Стеклянный белый для плашек
+                        reseda: '#8FA083',         // Мягкий шалфейный
+                        resedaLight: 'rgba(143, 160, 131, 0.12)',
+                        navy: '#0B2240',           // Темный чернильный
+                        cocoa: '#7A6E67',          // Нейтральный кофейный для подписей
+                        chive: '#3B4A35'           // Оливковый
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F4F4F6;
+            color: #0B0B0E;
+        }
+        /* Тонкий кастомный скроллбар в неоново-хромовом стиле */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F4F4F6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #A594F9;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C6F31F;
+        }
+        /* Стеклянные панели с эффектом жидкого металла */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(11, 11, 14, 0.08);
+            box-shadow: 0 4px 20px rgba(11, 11, 14, 0.02);
+        }
+        /* Металлический хромированный градиент для плашек */
+        .chrome-border {
+            border: 1px solid rgba(11, 11, 14, 0.08);
+            background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(244,244,246,0.8) 100%);
+        }
+        .chrome-border-hover:hover {
+            border-color: #A594F9;
+            box-shadow: 0 12px 30px rgba(165, 148, 249, 0.08);
+            transform: translateY(-2px);
+        }
+        /* Стилизация таблеток-капсул */
+        .pill-capsule {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col selection:bg-dynastyPurple selection:text-white">
+
+    <!-- Уведомления вместо браузерного alert -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- Основной Хедер -->
+    <header class="glass-panel border-b border-white/10 px-4 py-4 sticky top-0 z-40 bg-opacity-90">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <!-- Логотип -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-dynastyBlack to-[#222] flex items-center justify-center shadow-md border border-white/10">
+                    <svg class="w-6 h-6 text-dynastyPurple" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-dynastyBlack flex items-center">
+                        <span class="text-dynastyPurple mr-0.5 font-bold">F</span>inance
+                    </h1>
+                    <p class="text-[10px] text-cocoa uppercase tracking-wider font-extrabold font-sans">Капитал семьи</p>
+                </div>
+            </div>
+
+            <!-- Текущий статус соединения -->
+            <div id="connection-status-dot" class="flex items-center space-x-1.5 text-xs text-white font-extrabold bg-dynastyBlack px-4 py-1.5 rounded-full border border-dynastyPurple/30 shadow-[0_4px_12px_rgba(165,148,249,0.15)] transition-all duration-300">
+                <span class="w-2.5 h-2.5 bg-dynastyPurple rounded-full animate-pulse shadow-[0_0_8px_#A594F9] shrink-0"></span>
+                <span id="connection-status-text">Симулятор</span>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="flex items-center space-x-2">
+                <!-- Настройки подключения API -->
+                <button onclick="openSettingsModal()" class="bg-white hover:bg-dynastyBg border border-black/10 text-dynastyBlack p-2.5 rounded-xl transition-all shadow-sm" title="Настройки API Google Таблиц">
+                    <svg class="w-5 h-5 text-cocoa hover:text-dynastyPurple transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31(2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+                <button onclick="openProjectModal()" class="bg-white hover:bg-dynastyBg border border-black/10 text-dynastyBlack font-bold text-xs px-3.5 py-2.5 rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-4 h-4 text-dynastyPurple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Новый Объект
+                </button>
+                <button onclick="openExpenseModal()" class="bg-dynastyBlack hover:bg-black text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-dynastyLime" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Добавить Расход
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="flex-grow max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+        <!-- ================= СЕКЦИЯ 1: ДАШБОРД ================= -->
+        <section id="tab-dashboard" class="space-y-6">
+            
+            <!-- Интерактивный Баннер Общего Семейного Капитала -->
+            <div class="bg-[#0B0B0E] p-8 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-white relative overflow-hidden shadow-xl border border-white/5">
+                <div class="absolute -top-12 -right-12 w-80 h-80 bg-dynastyPurple/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 space-y-1">
+                    <p class="text-[10px] font-bold text-dynastyPurple uppercase tracking-widest flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-dynastyPurple shadow-[0_0_8px_#A594F9]"></span>
+                        Общий семейный капитал
+                    </p>
+                    <h2 id="stat-total-spent" class="text-4xl font-extrabold text-white tracking-tight sm:text-5xl">0 ₽</h2>
+                    <p id="stat-total-spent-sub" class="text-xs text-white/50 font-sans">Суммарные вложения во все объекты недвижимости</p>
+                </div>
+                <div class="flex flex-wrap gap-8 border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8 w-full md:w-auto relative z-10">
+                    <div>
+                        <p id="stat-monthly-spent-label" class="text-[10px] font-extrabold text-white/40 uppercase tracking-wider font-sans">В текущем месяце</p>
+                        <h4 id="stat-monthly-spent" class="text-xl font-bold text-dynastyLime mt-0.5">0 ₽</h4>
+                    </div>
+                    <div>
+                        <p id="stat-avg-spent-label" class="text-[10px] font-extrabold text-white/40 uppercase tracking-wider font-sans font-sans">Средний чек сметы</p>
+                        <h4 id="stat-avg-spent" class="text-xl font-bold text-[#A594F9] mt-0.5">0 ₽</h4>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-extrabold text-white/40 uppercase tracking-wider font-sans">Всего объектов</p>
+                        <h4 id="project-count" class="text-xl font-bold text-white mt-0.5">0</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка диагностики -->
+            <div class="flex justify-end pt-1">
+                <button onclick="runDataDiagnostics()" class="text-[10px] font-bold text-dynastyPurple bg-dynastyPurple/10 border border-dynastyPurple/20 rounded-full px-3.5 py-1.5 hover:bg-dynastyPurple hover:text-white transition-all flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    Запустить диагностику связей
+                </button>
+            </div>
+
+            <!-- Фильтрация объектов -->
+            <div class="space-y-3">
+                <p class="text-xs font-bold text-cocoa uppercase tracking-wider font-sans">Выберите объект для быстрой аналитики:</p>
+                <div id="dashboard-stats-selector" class="flex flex-wrap gap-2.5"></div>
+            </div>
+
+            <!-- Главный раздел: Траты по каждому объекту -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-dynastyBlack flex items-center gap-2 font-sans">
+                        <span class="w-2.5 h-2.5 rounded-full bg-dynastyPurple shadow-[0_0_8px_#A594F9]"></span>
+                        Мои объекты недвижимости
+                    </h2>
+                </div>
+
+                <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <!-- ИНТЕРАКТИВНЫЕ ГРАФИКИ ДАШБОРДА -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+                <!-- Динамика расходов по месяцам -->
+                <div class="glass-panel p-6 rounded-2xl lg:col-span-7 flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold text-dynastyBlack uppercase tracking-wider font-sans">Динамика инвестиций по месяцам</h3>
+                        <span class="text-xs text-cocoa font-bold font-sans">Общие расходы семейства</span>
+                    </div>
+                    <div class="relative w-full h-64">
+                        <canvas id="dashboard-monthly-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Структура расходов и долей -->
+                <div class="glass-panel p-6 rounded-2xl lg:col-span-5 flex flex-col justify-between">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                        <h3 id="dashboard-share-chart-title" class="text-sm font-bold text-dynastyBlack uppercase tracking-wider font-sans">Структура расходов</h3>
+                        <select id="dashboard-chart-selector" onchange="updateDashboardShareChart()" class="bg-[#1C1C21] border border-white/10 text-xs text-white rounded-lg p-1.5 focus:outline-none focus:border-dynastyPurple font-medium w-full sm:w-auto">
+                            <option value="all-categories">Все категории</option>
+                            <option value="project-shares">Доли объектов</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                        <div class="relative w-full h-48 flex items-center justify-center">
+                            <canvas id="dashboard-share-chart"></canvas>
+                        </div>
+                        <div class="space-y-1.5 max-h-48 overflow-y-auto text-xs pr-1 border-t sm:border-t-0 sm:border-l border-black/5 pt-3 sm:pt-0 sm:pl-3" id="dashboard-category-totals-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Последние транзакции (Быстрый просмотр) -->
+            <div class="glass-panel rounded-2xl p-6 text-dynastyBlack shadow-sm font-sans">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-base font-bold text-dynastyBlack">Последние внесённые расходы</h3>
+                    <span class="text-xs text-cocoa font-semibold">Топ 50 записей</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead>
+                            <tr class="border-b border-black/10 text-cocoa font-bold">
+                                <th class="pb-3 pl-2 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleRecentExpensesSort('project')">Проект <span id="sort-recent-project"></span></th>
+                                <th class="pb-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleRecentExpensesSort('date')">Дата <span id="sort-recent-date">▼</span></th>
+                                <th class="pb-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleRecentExpensesSort('Общая категория')">Общая категория <span id="sort-recent-category"></span></th>
+                                <th class="pb-3">Категория деталей</th>
+                                <th class="pb-3">Комментарий</th>
+                                <th class="pb-3 text-right pr-2 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleRecentExpensesSort('amount')">Сумма <span id="sort-recent-amount"></span></th>
+                                <th class="pb-3 text-center">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-expenses-tbody" class="divide-y divide-black/5"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= СЕКЦИЯ 2: ДЕТАЛИ ПРОЕКТА (ДИНАМИЧЕСКАЯ СМЕТА) ================= -->
+        <section id="tab-project-details" class="hidden space-y-6">
+            <!-- Хлебные крошки и заголовок -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-panel p-4 rounded-xl text-dynastyBlack font-sans">
+                <div class="flex items-center space-x-3">
+                    <button onclick="switchTab('dashboard')" class="text-cocoa hover:text-dynastyBlack transition-all flex items-center space-x-1 bg-white px-3 py-1.5 rounded-lg border border-black/10 text-xs font-bold">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        <span>К списку объектов</span>
+                    </button>
+                    <span class="text-reseda">/</span>
+                    <h2 id="detail-project-name" class="text-lg font-bold text-dynastyBlack">Загрузка проекта...</h2>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span id="detail-project-status" class="text-xs bg-dynastyPurple/15 border border-dynastyPurple/30 text-[#7C3AED] font-bold px-3 py-1 rounded-full">В процессе</span>
+                    <button onclick="deleteCurrentProject()" class="text-slate-400 hover:text-dynastyPurple hover:bg-dynastyPurple/10 p-2 rounded-lg transition-all" title="Удалить проект">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Упрощенная плашка себестоимости проекта -->
+            <div class="grid grid-cols-1 gap-5">
+                <div class="glass-panel p-6 rounded-2xl text-dynastyBlack flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <p class="text-xs font-bold text-cocoa uppercase tracking-wider font-sans">Фактическая себестоимость</p>
+                        <h4 id="detail-spent" class="text-3xl font-black text-dynastyPurple mt-1">0 ₽</h4>
+                    </div>
+                    <div class="text-xs text-[#59453B] font-semibold font-sans">
+                        Сумма всех зафиксированных на данный момент трат по объекту недвижимости
+                    </div>
+                </div>
+            </div>
+
+            <!-- Блок с диаграммами и деталями -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Круговой график по категориям расходов с боковым списком сумм -->
+                <div class="glass-panel p-5 rounded-2xl lg:col-span-5 flex flex-col justify-between text-dynastyBlack min-h-[340px]">
+                    <h3 class="text-sm font-bold text-dynastyBlack uppercase tracking-wider mb-4 font-sans">Себестоимость по категориям</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                        <div class="relative w-full h-48 flex items-center justify-center">
+                            <canvas id="project-categories-chart"></canvas>
+                        </div>
+                        <div class="space-y-1.5 max-h-48 overflow-y-auto text-xs pr-1 border-t sm:border-t-0 sm:border-l border-black/5 pt-3 sm:pt-0 sm:pl-3" id="project-category-totals-list"></div>
+                    </div>
+                </div>
+
+                <!-- Столбчатый график трат по месяцам проекта -->
+                <div class="glass-panel p-5 rounded-2xl lg:col-span-7 flex flex-col justify-between min-h-[340px] text-dynastyBlack">
+                    <h3 class="text-sm font-bold text-dynastyBlack uppercase tracking-wider mb-4 font-sans">Инвестиции в этот объект по месяцам</h3>
+                    <div class="relative w-full h-[240px]">
+                        <canvas id="project-monthly-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table of expenses with filtering -->
+            <div class="glass-panel p-5 rounded-2xl space-y-4 text-dynastyBlack font-sans">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <h3 class="text-sm font-bold text-dynastyBlack uppercase tracking-wider">Детальная спецификация трат</h3>
+                    
+                    <!-- Filters -->
+                    <div class="flex items-center space-x-2 w-full sm:w-auto">
+                        <select id="filter-category" onchange="renderProjectExpensesTable()" class="bg-white border border-black/10 text-xs text-dynastyBlack rounded-lg p-2.5 focus:outline-none focus:border-dynastyPurple font-medium">
+                            <option value="all">Все категории</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-black/5 max-h-[400px] overflow-y-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-[#F9F7F2]/60 text-dynastyBlack sticky top-0 z-10 font-bold border-b border-black/10">
+                            <tr>
+                                <th class="p-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleProjectExpensesSort('date')">Дата <span id="sort-project-date">▼</span></th>
+                                <th class="p-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleProjectExpensesSort('Общая категория')">Группа <span id="sort-project-category"></span></th>
+                                <th class="p-3">Детализация</th>
+                                <th class="p-3">Комментарий</th>
+                                <th class="p-3 text-right cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleProjectExpensesSort('amount')">Сумма <span id="sort-project-amount"></span></th>
+                                <th class="p-3 text-center">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="project-expenses-tbody" class="divide-y divide-black/5"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Подвал -->
+    <footer class="glass-panel border-t border-black/5 py-6 px-4 text-center text-xs text-cocoa/80 space-y-1 shadow-inner font-semibold font-sans">
+        <p class="font-semibold">© 2026 Finance. Все права защищены.</p>
+        <p class="text-[10px]">Интерфейс в светлом премиум-дизайне на базе палитры Home Pallet & MIND Violet.</p>
+    </footer>
+
+    <!-- ================= МОДАЛЬНЫЕ ОКНА ================= -->
+    
+    <!-- Настройки -->
+    <div id="modal-settings" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 border border-black/10 shadow-2xl relative text-dynastyBlack">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-dynastyBlack flex items-center gap-1.5 font-semibold">
+                    <svg class="w-5 h-5 text-dynastyPurple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31(2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+                    Настройки подключения
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-cocoa hover:text-dynastyBlack transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="space-y-4 text-xs sm:text-sm font-sans">
+                <p class="text-dynastyBlack/80 leading-relaxed font-medium">Здесь прописан ваш Apps Script API.</p>
+                <div>
+                    <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">URL Веб-приложения Google Apps Script</label>
+                    <input type="url" id="api-url-input" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 text-dynastyBlack focus:outline-none focus:border-dynastyPurple font-medium text-xs">
+                </div>
+                <div class="flex space-x-3 pt-2">
+                    <button type="button" onclick="closeSettingsModal()" class="w-1/2 bg-black/5 hover:bg-black/10 border border-black/10 rounded-xl p-3 text-dynastyBlack font-semibold transition-all">Отмена</button>
+                    <button type="button" onclick="saveSettings()" class="w-1/2 bg-dynastyPurple hover:bg-dynastyPurpleHover text-white rounded-xl p-3 font-semibold transition-all shadow-md">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Диагностика -->
+    <div id="modal-diagnostics" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans text-dynastyBlack">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 border border-black/10 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-base font-extrabold flex items-center gap-1.5">
+                    <svg class="w-5 h-5 text-dynastyPurple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    Диагностика данных Google Таблицы
+                </h3>
+                <button onclick="closeDiagnosticsModal()" class="text-cocoa hover:text-dynastyBlack transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="diagnostics-modal-body" class="space-y-4 text-xs"></div>
+            <div class="mt-5 flex justify-end">
+                <button onclick="closeDiagnosticsModal()" class="bg-dynastyPurple hover:bg-dynastyPurpleHover text-white text-xs rounded-xl px-5 py-2.5 font-bold transition-all">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно просмотра расходов категории -->
+    <div id="modal-category-details" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-3xl rounded-2xl p-6 border border-black/10 shadow-2xl relative flex flex-col max-h-[85vh] text-dynastyBlack">
+            <div class="flex justify-between items-center mb-4 shrink-0">
+                <div>
+                    <h3 id="category-details-title" class="text-base font-extrabold flex items-center gap-1.5 font-sans">
+                        <span class="w-2.5 h-2.5 rounded-full bg-dynastyPurple shadow-[0_0_8px_#A594F9]"></span>
+                        Детализация расходов
+                    </h3>
+                    <p id="category-details-subtitle" class="text-[11px] text-cocoa font-bold mt-0.5 font-sans"></p>
+                </div>
+                <button onclick="closeCategoryDetailsModal()" class="text-cocoa hover:text-dynastyBlack transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto rounded-xl border border-black/5 overflow-y-auto flex-grow max-h-[50vh]">
+                <table class="w-full text-left text-xs sm:text-sm">
+                    <thead class="bg-[#F9F7F2]/60 text-dynastyBlack sticky top-0 z-10 font-bold border-b border-black/10">
+                        <tr>
+                            <th class="p-2.5">Дата</th>
+                            <th class="p-2.5">Объект</th>
+                            <th class="p-2.5">Детализация</th>
+                            <th class="p-2.5">Комментарий</th>
+                            <th class="p-2.5 text-right">Сумма</th>
+                            <th class="p-2.5 text-center">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="category-details-tbody" class="divide-y divide-black/5"></tbody>
+                </table>
+            </div>
+            
+            <div class="mt-5 flex justify-between items-center pt-4 border-t border-black/5 shrink-0 text-xs">
+                <div class="font-bold text-navy">
+                    Итого по группе: <span id="category-details-total" class="text-dynastyPurple text-sm font-black">0 ₽</span>
+                </div>
+                <button onclick="closeCategoryDetailsModal()" class="bg-dynastyPurple hover:bg-dynastyPurpleHover text-white text-xs rounded-xl px-5 py-2.5 font-bold transition-all shadow-md">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавление/Редактирование одиночного расхода -->
+    <div id="modal-expense" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans text-dynastyBlack">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 border border-black/10 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-5">
+                <h3 id="expense-modal-title" class="text-lg font-bold flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-dynastyPurple shadow-[0_0_8px_#A594F9]"></span>
+                    Новая запись расхода
+                </h3>
+                <button onclick="closeExpenseModal()" class="text-cocoa hover:text-dynastyBlack transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <form id="form-expense" class="space-y-4 text-xs sm:text-sm">
+                <div>
+                    <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Выбор объекта недвижимости</label>
+                    <select id="expense-project" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Дата</label>
+                        <input type="date" id="expense-date" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm">
+                    </div>
+                    <div>
+                        <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Сумма расхода (₽)</label>
+                        <input type="number" id="expense-amount" placeholder="0" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Общая категория</label>
+                        <select id="expense-main-category" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm"></select>
+                    </div>
+                    <div>
+                        <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Категория деталей</label>
+                        <input type="text" id="expense-sub-category" placeholder="Арматура 12мм, и т.д." class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Комментарий к трате</label>
+                    <textarea id="expense-comment" rows="2" placeholder="Укажите подробности закупки..." class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm"></textarea>
+                </div>
+                <div class="flex space-x-3 pt-3">
+                    <button type="button" onclick="closeExpenseModal()" class="w-1/2 bg-black/5 hover:bg-black/10 border border-black/10 rounded-xl p-3 font-semibold transition-all">Отмена</button>
+                    <button type="button" id="btn-submit-expense" onclick="submitExpenseForm(event)" class="w-1/2 bg-dynastyPurple hover:bg-dynastyPurpleHover text-white font-semibold rounded-xl p-3 font-semibold transition-all shadow-md">Записать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Добавление нового проекта -->
+    <div id="modal-project" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans text-dynastyBlack">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 border border-black/10 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-lg font-bold flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                    Новый инвестиционный объект
+                </h3>
+                <button onclick="closeProjectModal()" class="text-cocoa hover:text-dynastyBlack transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </div>
+            
+            <form id="form-project-create" class="space-y-4 text-xs sm:text-sm">
+                <div>
+                    <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Название объекта</label>
+                    <input type="text" id="project-create-name" placeholder="Например: Дом на продажу №1" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Лимит бюджета (₽)</label>
+                        <input type="number" id="project-create-budget" placeholder="Без лимита" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm">
+                    </div>
+                    <div>
+                        <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Статус</label>
+                        <select id="project-create-status" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm">
+                            <option value="В процессе">В процессе</option>
+                            <option value="Планируется">Планируется</option>
+                            <option value="Завершен">Завершен</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex space-x-3 pt-3">
+                    <button type="button" onclick="closeProjectModal()" class="w-1/2 bg-black/5 hover:bg-black/10 border border-black/10 rounded-xl p-3 font-semibold transition-all">Отмена</button>
+                    <button type="button" onclick="submitProjectForm(event)" class="w-1/2 bg-dynastyPurple hover:bg-dynastyPurpleHover text-white font-extrabold transition-all">Создать объект</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждений -->
+    <div id="modal-confirm" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans">
+        <div class="bg-white w-full max-sm:max-w-xs max-w-sm rounded-2xl p-5 border border-black/10 shadow-2xl text-dynastyBlack relative">
+            <h3 id="confirm-title" class="text-base font-bold mb-2">Подтверждение действия</h3>
+            <p id="confirm-message" class="text-xs text-dynastyBlack/80 mb-5 leading-relaxed"></p>
+            <div class="flex space-x-3">
+                <button id="confirm-btn-no" onclick="closeConfirmModal()" class="w-1/2 bg-black/5 border border-black/10 rounded-xl p-2.5 text-xs font-bold transition-all">Отмена</button>
+                <button id="confirm-btn-yes" class="w-1/2 bg-dynastyPurple hover:bg-dynastyPurpleHover text-white text-xs rounded-xl p-2.5 font-bold transition-all">Продолжить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== СКРИПТЫ ========================================== -->
+    <script>
+        // Демонстрационные данные на случай симулятора
+        const defaultProjects = [
+            { ID: "1", "Название": "Строительство Дома (Красный Бор)", "Бюджет": "12000000", "Статус": "В процессе" },
+            { ID: "2", "Название": "Ремонт квартиры на Ленина", "Бюджет": "4500000", "Статус": "Планируется" }
+        ];
+
+        const defaultExpenses = [
+            { ID: "101", "ID Проекта": "1", "Дата": "2026-05-10", "Категория": "Арматура 12мм", "Общая категория": "Фундамент", "Сумма": "175365", "Комментарий": "Закупка на металлобазе" },
+            { ID: "102", "ID Проекта": "1", "Дата": "2026-05-12", "Категория": "Доставка щебня", "Общая категория": "Фундамент", "Сумма": "22200", "Комментарий": "3 машины" }
+        ];
+
+        const defaultCategories = [
+            { ID: "1", "Общая категория": "Фундамент" },
+            { ID: "2", "Общая категория": "Стены" },
+            { ID: "3", "Общая категория": "Крыша" },
+            { ID: "4", "Общая категория": "Электрика" },
+            { ID: "5", "Общая категория": "Сантехника" },
+            { ID: "6", "Общая категория": "Отделка" },
+            { ID: "7", "Общая категория": "Фасад" },
+            { ID: "8", "Общая категория": "Окна" },
+            { ID: "9", "Общая категория": "Земля" },
+            { ID: "10", "Общая категория": "Работа" },
+            { ID: "11", "Общая категория": "Документы" },
+            { ID: "12", "Общая категория": "Прочее" },
+            { ID: "13", "Общая категория": "Чистовая отделка" },
+            { ID: "14", "Общая категория": "Благоустройство" },
+            { ID: "15", "Общая категория": "Подготовительный этап" },
+            { ID: "16", "Общая категория": "Документация" }
+        ];
+
+        let projects = [];
+        let expenses = [];
+        let categories = [];
+        let activeProjectId = null;
+        let selectedStatsFilter = "all"; 
+        let lastWriteTime = 0; 
+        let confirmActionCallback = null; 
+        let editExpenseId = null;
+        
+        let dashMonthlyChartInstance = null;
+        let dashShareChartInstance = null;
+        let projCategoriesChartInstance = null;
+        let projMonthlyChartInstance = null;
+
+        let recentExpensesSortCol = "date";
+        let recentExpensesSortAsc = false;
+        let projectExpensesSortCol = "date";
+        let projectExpensesSortAsc = false;
+        
+        // НОВЫЙ АКТУАЛЬНЫЙ АДРЕС API GOOGLE APPS SCRIPT
+        const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbws4E9YcJ6IQX0KuQZ0wRmt8fqP0tPW7rz69DRO3qw4doOraIq7rFirPeP_Llo-Sum2/exec";
+        let googleScriptUrl = "";
+
+        // ================= СИСТЕМНЫЕ ФУНКЦИИ =================
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded-xl text-xs sm:text-sm font-bold shadow-2xl border transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto flex items-center space-x-2 ${
+                type === "success" 
+                ? "bg-[#F5F3FF] border-dynastyPurple/30 text-[#7C3AED] shadow-[0_4px_15px_rgba(165,148,249,0.1)]" 
+                : type === "error"
+                ? "bg-red-50 border-red-200 text-red-700 shadow-sm"
+                : "bg-dynastyBlack text-white border-dynastyPurple/30 shadow-[0_4px_15px_rgba(165,148,249,0.1)]"
+            }`;
+            
+            toast.innerHTML = `
+                <span class="w-2.5 h-2.5 rounded-full ${type === 'success' ? 'bg-dynastyPurple animate-ping' : type === 'error' ? 'bg-red-500' : 'bg-dynastyPurple'}"></span>
+                <span class="${type === 'error' ? 'text-red-700' : 'text-white'}">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        // КРИТИЧЕСКИ ВАЖНЫЕ ФУНКЦИИ ФОРМАТИРОВАНИЯ И ПАРСИНГА ДЕНЕГ
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('ru-RU', {
+                style: 'currency',
+                currency: 'RUB',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function parseMoneyValue(val) {
+            if (val === undefined || val === null) return 0;
+            if (typeof val === 'number') return val;
+            
+            // Удаляем пробелы, неразрывные пробелы, буквы, рубли и знаки валют
+            let str = String(val)
+                .replace(/[\s\u00A0\u2007\u202F\u200F]/g, '')
+                .replace(/[^0-9,\.\-]/g, '')
+                .replace(',', '.');
+                
+            let num = parseFloat(str);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function parseSafeDate(dateStr) {
+            if (!dateStr) return new Date(0);
+            if (dateStr instanceof Date) return dateStr;
+            let s = String(dateStr).trim();
+            if (!s) return new Date(0);
+            let ddmmyyyy = s.match(/^(\d{1,2})[\./-](\d{1,2})[\./-](\d{2,4})/);
+            if (ddmmyyyy) {
+                let year = parseInt(ddmmyyyy[3], 10);
+                if (year < 100) year += 2000;
+                return new Date(year, parseInt(ddmmyyyy[2], 10) - 1, parseInt(ddmmyyyy[1], 10));
+            }
+            let timestamp = Date.parse(s);
+            if (!isNaN(timestamp)) return new Date(timestamp);
+            if (/^\d{5}$/.test(s)) {
+                const serial = parseInt(s, 10);
+                const utc_days  = serial - 25569;
+                const utc_value = utc_days * 86400;
+                return new Date(utc_value * 1000);
+            }
+            const monthsRu = {
+                "янв": 0, "фев": 1, "мар": 2, "апр": 3, "май": 4, "июн": 5,
+                "июл": 6, "авг": 7, "сен": 8, "окт": 9, "ноя": 10, "дек": 11
+            };
+            let lowerS = s.toLowerCase();
+            for (let monthName in monthsRu) {
+                if (lowerS.includes(monthName)) {
+                    let dayMatch = lowerS.match(/^(\d{1,2})/);
+                    let yearMatch = lowerS.match(/(\d{4})/);
+                    let day = dayMatch ? parseInt(dayMatch[1], 10) : 1;
+                    let year = yearMatch ? parseInt(yearMatch[1], 10) : new Date().getFullYear();
+                    return new Date(year, monthsRu[monthName], day);
+                }
+            }
+            let yyyymmdd = s.match(/^(\d{4})[\./-](\d{1,2})[\./-](\d{1,2})/);
+            if (yyyymmdd) return new Date(parseInt(yyyymmdd[1], 10), parseInt(yyyymmdd[2], 10) - 1, parseInt(yyyymmdd[3], 10));
+            let parsed = new Date(s.replace(/\./g, '/'));
+            return isNaN(parsed.getTime()) ? new Date(0) : parsed;
+        }
+
+        function formatDateStr(str) {
+            if (!str) return '—';
+            const d = parseSafeDate(str);
+            if (isNaN(d.getTime()) || d.getTime() === 0) return str;
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        function getStatusBadge(status) {
+            const s = String(status).trim();
+            if (s === "В процессе") {
+                return `<span class="text-[10px] bg-dynastyPurple/15 border border-dynastyPurple/30 text-[#7C3AED] px-2.5 py-0.5 rounded-full font-bold whitespace-nowrap">В процессе</span>`;
+            } else if (s === "Завершен") {
+                return `<span class="text-[10px] bg-dynastyPurple/5 border border-dynastyPurple/10 text-dynastyBlack/60 px-2.5 py-0.5 rounded-full font-bold whitespace-nowrap">Завершен</span>`;
+            } else {
+                return `<span class="text-[10px] bg-black/5 border border-black/10 text-cocoa px-2.5 py-0.5 rounded-full font-bold whitespace-nowrap">${s}</span>`;
+            }
+        }
+
+        function disconnectApi() {
+            localStorage.setItem('hf_google_script_url', "");
+            googleScriptUrl = "";
+            updateConnectionStatusIndicator(false);
+            showToast("Вы переключились на локальный симулятор", "info");
+            initSimulator();
+        }
+
+        function openConfirmModal(title, message, onYes) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-message').innerText = message;
+            confirmActionCallback = onYes;
+            document.getElementById('modal-confirm').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('modal-confirm').classList.add('hidden');
+            confirmActionCallback = null;
+        }
+
+        function runDataDiagnostics() {
+            let html = "";
+            let apiStatus = googleScriptUrl ? "Подключено к Google Таблице" : "Локальный симулятор";
+            let apiColor = googleScriptUrl ? "text-emerald-600" : "text-amber-500";
+            
+            html += `<div class="space-y-4 font-sans text-xs">
+                <div class="flex justify-between items-center pb-2 border-b border-black/10">
+                    <span class="font-bold text-xs uppercase text-cocoa tracking-wider">Статус подключения:</span>
+                    <span class="font-extrabold text-xs ${apiColor}">${apiStatus}</span>
+                </div>`;
+            
+            html += `<div class="space-y-1">
+                <div class="flex justify-between">
+                    <span class="font-bold text-xs">Загружено объектов недвижимости:</span>
+                    <span class="font-extrabold text-xs text-dynastyPurple">${projects.length}</span>
+                </div>`;
+            if (projects.length > 0) {
+                html += `<div class="bg-black/5 p-2 rounded-lg text-[10px] font-mono max-h-24 overflow-y-auto space-y-1">`;
+                let headers = Object.keys(projects[0]);
+                html += `<div class="text-cocoa font-bold">Заголовки листа: [ ${headers.join(", ")} ]</div>`;
+                projects.forEach(p => {
+                    html += `<div>ID: "${getProjID(p)}" | Название: "${getProjName(p)}" | Бюджет: "${getProjBudget(p)}"</div>`;
+                });
+                html += `</div>`;
+            } else {
+                html += `<div class="text-[11px] text-red-500 font-bold">⚠️ Список объектов абсолютно пуст! Проверьте лист "Проекты".</div>`;
+            }
+            html += `</div>`;
+
+            html += `<div class="space-y-1">
+                <div class="flex justify-between">
+                    <span class="font-bold text-xs">Загружено расходов из таблицы (строк):</span>
+                    <span class="font-extrabold text-xs text-dynastyPurple">${expenses.length}</span>
+                </div>`;
+            if (expenses.length > 0) {
+                html += `<div class="bg-black/5 p-2 rounded-lg text-[10px] font-mono max-h-24 overflow-y-auto space-y-1">`;
+                let headers = Object.keys(expenses[0]);
+                html += `<div class="text-cocoa font-bold">Заголовки листа: [ ${headers.join(", ")} ]</div>`;
+                expenses.slice(0, 3).forEach(e => {
+                    html += `<div>ID: "${getExpID(e)}" | ID_Proj: "${getExpProjId(e)}" | Сумма: "${getExpAmount(e)}" | Дата: "${getExpDate(e)}"</div>`;
+                });
+                if (expenses.length > 3) html += `<div>... и еще ${expenses.length - 3} строк</div>`;
+                html += `</div>`;
+            } else {
+                html += `<div class="text-[11px] text-red-500 font-bold">⚠️ Список расходов пуст! Проверьте лист "Расходы".</div>`;
+            }
+            html += `</div>`;
+
+            let unlinkedCount = 0;
+            let unlinkedReport = "";
+            expenses.forEach((e, idx) => {
+                let linked = false;
+                projects.forEach(p => {
+                    if (isExpenseLinkedToProject(e, p)) linked = true;
+                });
+                if (!linked) {
+                    unlinkedCount++;
+                    unlinkedReport += `<div>Стр. ${idx + 2} | Сумма: ${getExpAmount(e)} ₽ | Указан проект: "${getExpProjId(e)}"</div>`;
+                }
+            });
+
+            html += `<div class="space-y-1">
+                <div class="flex justify-between">
+                    <span class="font-bold text-xs">Не связалось трат с проектами (ошибки):</span>
+                    <span class="font-extrabold text-xs ${unlinkedCount > 0 ? 'text-red-500 animate-pulse' : 'text-emerald-600'}">${unlinkedCount}</span>
+                </div>`;
+            if (unlinkedCount > 0) {
+                html += `<p class="text-[10px] text-cocoa leading-relaxed">Эти трэки не выводятся на сайте, так как их проектный ID не совпадает ни с одним ID или Названием объекта недвижимости.</p>`;
+                html += `<div class="bg-red-50 border border-red-200 text-red-700 p-2 rounded-lg text-[10px] font-mono max-h-24 overflow-y-auto">${unlinkedReport}</div>`;
+            } else {
+                html += `<p class="text-[11px] text-emerald-600 font-bold">✅ Отлично! Все расходы успешно связаны с объектами!</p>`;
+            }
+            html += `</div></div>`;
+
+            document.getElementById('diagnostics-modal-body').innerHTML = html;
+            document.getElementById('modal-diagnostics').classList.remove('hidden');
+        }
+
+        function closeDiagnosticsModal() {
+            document.getElementById('modal-diagnostics').classList.add('hidden');
+        }
+
+        function sortExpenses(expensesArray, col, asc) {
+            return expensesArray.sort((a, b) => {
+                let valA, valB;
+                if (col === "date") {
+                    valA = parseSafeDate(getExpDate(a)).getTime();
+                    valB = parseSafeDate(getExpDate(b)).getTime();
+                    if (isNaN(valA)) valA = 0;
+                    if (isNaN(valB)) valB = 0;
+                } else if (col === "amount") {
+                    valA = getExpAmount(a);
+                    valB = getExpAmount(b);
+                } else if (col === "project") {
+                    const projA = projects.find(p => isExpenseLinkedToProject(a, p));
+                    const projB = projects.find(p => isExpenseLinkedToProject(b, p));
+                    valA = projA ? getProjName(projA).toLowerCase() : "";
+                    valB = projB ? getProjName(projB).toLowerCase() : "";
+                } else if (col === "Общая категория") {
+                    valA = getExpMainCat(a).toLowerCase();
+                    valB = getExpMainCat(b).toLowerCase();
+                } else {
+                    valA = String(getFlexValue(a, [col])).toLowerCase();
+                    valB = String(getFlexValue(b, [col])).toLowerCase();
+                }
+                
+                if (valA < valB) return asc ? -1 : 1;
+                if (valA > valB) return asc ? 1 : -1;
+                return 0;
+            });
+        }
+
+        function updateSortIndicators() {
+            const colsRecent = ['project', 'date', 'Общая категория', 'amount'];
+            colsRecent.forEach(c => {
+                const el = document.getElementById('sort-recent-' + (c === 'Общая категория' ? 'category' : c));
+                if (el) {
+                    if (recentExpensesSortCol === c) {
+                        el.innerText = recentExpensesSortAsc ? ' ▲' : ' ▼';
+                        el.className = "text-dynastyPurple font-black";
+                    } else {
+                        el.innerText = '';
+                        el.className = "";
+                    }
+                }
+            });
+
+            const colsProj = ['date', 'Общая категория', 'amount'];
+            colsProj.forEach(c => {
+                const el = document.getElementById('sort-project-' + (c === 'Общая категория' ? 'category' : c));
+                if (el) {
+                    if (projectExpensesSortCol === c) {
+                        el.innerText = projectExpensesSortAsc ? ' ▲' : ' ▼';
+                        el.className = "text-dynastyPurple font-black";
+                    } else {
+                        el.innerText = '';
+                        el.className = "";
+                    }
+                }
+            });
+        }
+
+        function getFlexValue(obj, possibleKeys) {
+            if (!obj) return "";
+            for (let key of possibleKeys) {
+                if (obj[key] !== undefined && obj[key] !== null) return obj[key];
+            }
+            const normalizedKeys = possibleKeys.map(k => String(k).toLowerCase().replace(/[\s_\-]/g, ''));
+            for (let realKey in obj) {
+                const normalizedRealKey = realKey.toLowerCase().replace(/[\s_\-]/g, '');
+                if (normalizedKeys.includes(normalizedRealKey)) return obj[realKey];
+            }
+            return "";
+        }
+
+        const getProjName = (p) => {
+            let val = getFlexValue(p, ["Название", "Name", "name", "название", "Объект", "Название объекта", "Название проекта", "projectName", "Название проекта "]);
+            return val ? String(val).trim() : "Без названия";
+        };
+        const getProjBudget = (p) => {
+            let val = getFlexValue(p, ["Бюджет", "Budget", "budget", "бюджет", "Лимит"]);
+            return val ? String(val).trim() : "";
+        };
+        const getProjStatus = (p) => {
+            let val = getFlexValue(p, ["Статус", "Status", "status", "статус"]);
+            return val ? String(val).trim() : "В процессе";
+        };
+        const getProjID = (p) => {
+            let val = getFlexValue(p, ["ID", "id", "Id", "ID объекта", "ID Проекта", "projectId", "project_id"]);
+            let str = String(val !== null && val !== undefined ? val : "").trim();
+            if (str.endsWith(".0")) str = str.substring(0, str.length - 2);
+            return str;
+        };
+
+        const getExpProjId = (e) => {
+            let val = getFlexValue(e, ["ID Проекта", "ID Proj", "projectId", "id проекта", "id proj", "ID_Proj", "ID_Проекта", "Проект", "Объект", "project", "object"]);
+            let str = String(val !== null && val !== undefined ? val : "").trim();
+            if (str.endsWith(".0")) str = str.substring(0, str.length - 2);
+            return str;
+        };
+        const getExpAmount = (e) => {
+            let val = getFlexValue(e, ["Сумма", "Amount", "amount", "сумма", "Сумма расхода", "Цена", "Стоимость"]);
+            return parseMoneyValue(val);
+        };
+        const getExpMainCat = (e) => {
+            let val = getFlexValue(e, ["Общая категория", "Main Category", "mainCategory", "общая категория", "Группа", "Группа расходов"]);
+            return val ? String(val).trim() : "Прочее";
+        };
+        const getExpSubCat = (e) => {
+            let val = getFlexValue(e, ["Категория", "Sub Category", "category", "категория", "Категория деталей", "Детализация", "Описание", "Категория деталей "]);
+            return val ? String(val).trim() : "";
+        };
+        const getExpDate = (e) => {
+            let val = getFlexValue(e, ["Дата", "Date", "date", "дата", "Когда"]);
+            return val ? String(val).trim() : "";
+        };
+        const getExpComment = (e) => {
+            let val = getFlexValue(e, ["Комментарий", "Comment", "comment", "комментарий", "Заметка", "Примечания"]);
+            return val ? String(val).trim() : "";
+        };
+        const getExpID = (e) => {
+            let val = getFlexValue(e, ["ID", "id", "Id"]);
+            return val ? String(val).trim() : "";
+        };
+
+        function normalizeHomoglyphs(str) {
+            const map = {
+                'a': 'а', 'c': 'с', 'e': 'е', 'o': 'о', 'p': 'р', 'x': 'х', 'y': 'у', 'i': 'і',
+                'h': 'н', 't': 'т', 'm': 'м', 'k': 'к', 'b': 'в'
+            };
+            return String(str).toLowerCase().split('').map(char => map[char] || char).join('');
+        }
+
+        function simplifyString(str) {
+            let s = String(str).toLowerCase().replace(/[\s_\-]/g, '');
+            return normalizeHomoglyphs(s);
+        }
+
+        function isExpenseLinkedToProject(e, project) {
+            if (!project) return false;
+            const eProjId = String(getExpProjId(e)).trim().toLowerCase();
+            const pId = String(getProjID(project)).trim().toLowerCase();
+            const pName = String(getProjName(project)).trim().toLowerCase();
+            
+            if (!eProjId) return false;
+            if (eProjId === pId) return true;
+            if (eProjId === pName) return true;
+            
+            const simpEProjId = simplifyString(eProjId);
+            const simpPId = simplifyString(pId);
+            const simpPName = simplifyString(pName);
+
+            if (simpEProjId === simpPId || simpEProjId === simpPName) return true;
+            if (simpEProjId.length >= 3 && simpPName.includes(simpEProjId)) return true;
+            if (simpPName.length >= 3 && simpEProjId.includes(simpPName)) return true;
+            
+            return false;
+        }
+
+        function normalizeData() {
+            if (!Array.isArray(projects)) projects = [];
+            if (!Array.isArray(expenses)) expenses = [];
+
+            projects = projects.map(p => {
+                const cleanProj = {};
+                for (let k in p) {
+                    let cleanK = k.trim();
+                    let val = p[k];
+                    if (typeof val === 'string') val = val.trim();
+                    cleanProj[cleanK] = val;
+                }
+                
+                const possibleProjIDKeys = ["ID", "id", "Id", "ID объекта", "ID Проекта", "projectId", "project_id"];
+                for (let key in cleanProj) {
+                    let normalizedK = key.toLowerCase().replace(/[\s_\-]/g, '');
+                    let isIDKey = possibleProjIDKeys.some(pk => pk.toLowerCase().replace(/[\s_\-]/g, '') === normalizedK);
+                    if (isIDKey) {
+                        let val = cleanProj[key];
+                        if (val !== undefined && val !== null) {
+                            let strVal = String(val).trim();
+                            if (strVal.endsWith(".0")) {
+                                strVal = strVal.substring(0, strVal.length - 2);
+                            }
+                            cleanProj[key] = strVal;
+                        }
+                    }
+                }
+                return cleanProj;
+            });
+
+            expenses = expenses.map(e => {
+                const cleanExp = {};
+                for (let k in e) {
+                    let cleanK = k.trim();
+                    let val = e[k];
+                    if (typeof val === 'string') val = val.trim();
+                    cleanExp[cleanK] = val;
+                }
+
+                const possibleProjIdKeys = ["ID Проекта", "ID Proj", "projectId", "id проекта", "id proj", "ID_Proj", "ID_Проекта", "Проект", "Объект", "project", "object"];
+                for (let key in cleanExp) {
+                    let normalizedK = key.toLowerCase().replace(/[\s_\-]/g, '');
+                    let isProjIdKey = possibleProjIdKeys.some(pk => pk.toLowerCase().replace(/[\s_\-]/g, '') === normalizedK);
+                    if (isProjIdKey) {
+                        let val = cleanExp[key];
+                        if (val !== undefined && val !== null) {
+                            let strVal = String(val).trim();
+                            if (strVal.endsWith(".0")) {
+                                strVal = strVal.substring(0, strVal.length - 2);
+                            }
+                            cleanExp[key] = strVal;
+                        }
+                    }
+                }
+
+                const possibleCatKeys = ["Общая категория", "Main Category", "mainCategory", "общая категория", "Группа", "Группа расходов"];
+                for (let catKey of possibleCatKeys) {
+                    for (let key in cleanExp) {
+                        if (key.toLowerCase().replace(/[\s_\-]/g, '') === catKey.toLowerCase().replace(/[\s_\-]/g, '')) {
+                            let catName = String(cleanExp[key]).trim();
+                            if (catName) {
+                                catName = catName.charAt(0).toUpperCase() + catName.slice(1).toLowerCase();
+                                cleanExp[key] = catName;
+                            }
+                        }
+                    }
+                }
+
+                // ГЕНЕРАЦИЯ ID ДЛЯ СТРАХОВКИ (ЕСЛИ В ТАБЛИЦЕ ОН ПУСТОЙ)
+                if (!getExpID(cleanExp) || getExpID(cleanExp) === "") {
+                    cleanExp["ID"] = "tmp_" + Math.random().toString(36).substr(2, 9);
+                }
+
+                return cleanExp;
+            });
+        }
+
+        // ================= ЕДИНАЯ ФУНКЦИЯ ДЛЯ БЕЗОПАСНЫХ GET ЗАПРОСОВ К GOOGLE =================
+        async function apiRequest(params) {
+            if (!googleScriptUrl) return null;
+            const cleanUrl = googleScriptUrl.trim();
+            if (!cleanUrl.includes("script.google.com") || !cleanUrl.endsWith("/exec")) return null;
+            
+            const url = new URL(cleanUrl);
+            Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+            url.searchParams.append('_ts', Date.now()); // Защита от кэширования
+
+            // БЕЗ КАСТОМНЫХ ЗАГОЛОВКОВ ДЛЯ ИЗБЕЖАНИЯ ОШИБКИ CORS PREFLIGHT (OPTIONS)
+            const response = await fetch(url.toString(), {
+                method: 'GET'
+            });
+            
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("text/html")) {
+                throw new TypeError("Блокировка доступа. Проверьте права 'Всем' в Apps Script.");
+            }
+            
+            return await response.json();
+        }
+
+        function updateConnectionStatusIndicator(isConnected) {
+            const statusDot = document.getElementById('connection-status-dot');
+            if (!statusDot) return;
+            
+            if (isConnected) {
+                statusDot.className = "flex items-center space-x-1.5 text-xs text-white font-extrabold bg-dynastyBlack px-4 py-1.5 rounded-full border border-dynastyPurple/30 shadow-[0_4px_12px_rgba(165,148,249,0.15)] transition-all duration-300";
+                statusDot.innerHTML = `<span class="w-2.5 h-2.5 bg-dynastyPurple rounded-full animate-pulse shadow-[0_0_8px_#A594F9] shrink-0"></span><span id="connection-status-text">Подключено к Google Таблице</span>`;
+            } else {
+                statusDot.className = "flex items-center space-x-1.5 text-xs text-dynastyBlack font-bold bg-white px-4 py-1.5 rounded-full border border-black/10 shadow-sm transition-all duration-300";
+                statusDot.innerHTML = `<span class="w-2.5 h-2 bg-dynastyBlack rounded-full shrink-0"></span><span id="connection-status-text">Автономный симулятор</span>`;
+            }
+        }
+
+        function initSimulator() {
+            if (!localStorage.getItem('hf_projects')) {
+                localStorage.setItem('hf_projects', JSON.stringify(defaultProjects));
+                localStorage.setItem('hf_expenses', JSON.stringify(defaultExpenses));
+                localStorage.setItem('hf_categories', JSON.stringify(defaultCategories));
+            }
+            
+            loadLocalState();
+            normalizeData();
+            renderDashboard();
+            populateFormDropdowns();
+            showToast("База данных работает в режиме симулятора!", "success");
+        }
+
+        function loadLocalState() {
+            projects = JSON.parse(localStorage.getItem('hf_projects')) || [];
+            expenses = JSON.parse(localStorage.getItem('hf_expenses')) || [];
+            categories = JSON.parse(localStorage.getItem('hf_categories')) || [];
+        }
+
+        function saveLocalState() {
+            localStorage.setItem('hf_projects', JSON.stringify(projects));
+            localStorage.setItem('hf_expenses', JSON.stringify(expenses));
+            localStorage.setItem('hf_categories', JSON.stringify(categories));
+        }
+
+        async function loadDataFromGoogleSheets() {
+            if (!googleScriptUrl) return;
+            try {
+                showToast("Синхронизация с Google Таблицами...", "info");
+                const data = await apiRequest({ action: 'read' });
+                
+                if (data && data.projects && data.expenses) {
+                    projects = data.projects;
+                    expenses = data.expenses;
+                    categories = data.categories || defaultCategories;
+                    
+                    normalizeData(); 
+                    renderDashboard();
+                    populateFormDropdowns();
+                    
+                    if (activeProjectId) {
+                        const currentProj = projects.find(p => String(getProjID(p)).trim() === String(activeProjectId).trim());
+                        if (currentProj) {
+                            renderProjectExpensesTable();
+                            renderProjectAnalytics(currentProj);
+                        }
+                    }
+                    
+                    showToast("Данные успешно синхронизированы!", "success");
+                } else if (data && data.error) {
+                    throw new TypeError("Ошибка внутри Google Таблицы: " + data.error);
+                } else {
+                    throw new TypeError("Получен пустой ответ от таблицы.");
+                }
+            } catch (error) {
+                console.warn("СБОЙ ПОДКЛЮЧЕНИЯ:", error);
+                
+                if (error.name === 'TypeError') {
+                     let html = `
+                        <div class="space-y-4 font-sans text-xs">
+                            <div class="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200 shadow-sm">
+                                <h4 class="font-black text-sm mb-1 uppercase tracking-wider">🚨 Доступ к таблице заблокирован</h4>
+                                <p class="font-medium">Браузер не смог прочитать данные. Причина: ${error.message}</p>
+                            </div>
+                            <div class="text-xs space-y-2 text-dynastyBlack bg-[#F4F4F6] p-4 rounded-xl border border-black/10">
+                                <p class="font-bold uppercase text-cocoa tracking-wider">Как исправить за 1 минуту:</p>
+                                <ol class="list-decimal pl-4 space-y-2 font-medium">
+                                    <li>В Google Таблице откройте <b>Расширения -> Apps Script</b>.</li>
+                                    <li>Нажмите синюю кнопку <b>Начать развертывание -> Управление развертываниями</b>.</li>
+                                    <li>Нажмите на карандашик ✏️.</li>
+                                    <li><span class="text-dynastyPurple font-bold">ВАЖНО:</span> В поле Версия выберите <b>"Новая версия"</b>.</li>
+                                    <li><span class="text-dynastyPurple font-bold">ВАЖНО:</span> В поле "У кого есть доступ" выберите <b>"Все"</b> (не "Все с аккаунтом", а просто "Все").</li>
+                                    <li>Нажмите <b>Развернуть</b> и вставьте новую ссылку на сайт.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    `;
+                    const diagBody = document.getElementById('diagnostics-modal-body');
+                    if (diagBody) {
+                        diagBody.innerHTML = html;
+                        document.getElementById('modal-diagnostics').classList.remove('hidden');
+                    }
+                }
+                
+                disconnectApi();
+            }
+        }
+
+        async function silentSyncGoogleSheets(force = false) {
+            if (!googleScriptUrl) return;
+            if (!force && Date.now() - lastWriteTime < 8000) return;
+            
+            try {
+                const data = await apiRequest({ action: 'read' });
+                if (data && data.projects && data.expenses) {
+                    projects = data.projects;
+                    expenses = data.expenses;
+                    categories = data.categories || defaultCategories;
+                    normalizeData();
+                    renderDashboard();
+                    populateFormDropdowns();
+                    
+                    if (activeProjectId) {
+                        const currentProj = projects.find(p => String(getProjID(p)).trim() === String(activeProjectId).trim());
+                        if (currentProj) {
+                            renderProjectExpensesTable();
+                            renderProjectAnalytics(currentProj);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn("Silent background sync failed:", error);
+            }
+        }
+
+        function renderDashboard() {
+            const filterContainer = document.getElementById('dashboard-stats-selector');
+            if (filterContainer) {
+                filterContainer.innerHTML = '';
+                
+                const isAllActive = selectedStatsFilter === "all";
+                filterContainer.innerHTML += `
+                    <button onclick="setStatsFilter('all')" class="px-5 py-2.5 rounded-full text-xs font-bold transition-all pill-capsule shadow-sm ${
+                        isAllActive 
+                        ? 'bg-dynastyBlack text-white border border-dynastyBlack font-extrabold' 
+                        : 'bg-white text-dynastyBlack border border-black/10 hover:border-black/30'
+                    }">Все объекты</button>
+                `;
+
+                projects.forEach((p, idx) => {
+                    const pId = getProjID(p);
+                    const isActive = selectedStatsFilter === pId;
+                    
+                    let styleClasses = 'bg-white text-dynastyBlack border border-black/10 hover:border-black/30 hover:bg-[#F4F4F6]';
+                    if (isActive) {
+                        if (idx % 2 === 0) {
+                            styleClasses = 'bg-gradient-to-tr from-dynastyPurple to-[#C4B5FD] text-white border border-dynastyPurple shadow-[0_6px_20px_rgba(165,148,249,0.4)] font-black';
+                        } else {
+                            styleClasses = 'bg-dynastyLime text-dynastyBlack border border-dynastyLime shadow-[0_4px_12px_rgba(198,243,31,0.25)] font-black';
+                        }
+                    }
+
+                    filterContainer.innerHTML += `
+                        <button onclick="setStatsFilter('${pId}')" class="px-5 py-2.5 rounded-full text-xs font-bold transition-all pill-capsule ${styleClasses}">${getProjName(p)}</button>
+                    `;
+                });
+            }
+
+            const projectCosts = {};
+            projects.forEach(p => {
+                projectCosts[getProjID(p)] = 0;
+            });
+
+            expenses.forEach(e => {
+                const amt = getExpAmount(e);
+                projects.forEach(p => {
+                    const pId = getProjID(p);
+                    if (isExpenseLinkedToProject(e, p)) {
+                        projectCosts[pId] += amt;
+                    }
+                });
+            });
+
+            document.getElementById('project-count').innerText = `Всего объектов: ${projects.length}`;
+
+            const grid = document.getElementById('projects-grid');
+            grid.innerHTML = '';
+
+            if (projects.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-10 bg-creamSoft rounded-2xl border border-dashed border-reseda p-6 shadow-sm">
+                        <p class="text-sm text-cocoa/70 font-medium font-sans">У вас пока нет созданных объектов недвижимости.</p>
+                        <button onclick="openProjectModal()" class="mt-4 bg-dynastyBlack hover:bg-black text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all">Добавить первый проект</button>
+                    </div>
+                `;
+            } else {
+                projects.forEach(p => {
+                    const pId = getProjID(p);
+                    const spent = projectCosts[pId] || 0;
+                    const budgetRaw = getProjBudget(p);
+                    const hasBudget = budgetRaw && !isNaN(parseFloat(budgetRaw)) && parseFloat(budgetRaw) > 0;
+                    const budget = hasBudget ? parseFloat(budgetRaw) : 0;
+                    const percent = hasBudget ? Math.min(Math.round((spent / budget) * 100), 100) : 0;
+                    const isOverBudget = hasBudget && (spent > budget);
+
+                    let budgetSection = "";
+                    if (hasBudget) {
+                        budgetSection = `
+                            <div class="space-y-1 mt-3 font-sans text-navy">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-cocoa uppercase tracking-wider font-bold font-sans">Инвестировано</span>
+                                    <span class="text-3xl font-black text-dynastyBlack leading-none tracking-tight font-sans mt-0.5">${formatMoney(spent)}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px] text-cocoa font-medium pt-1.5 font-sans">
+                                    <span>Лимит: ${formatMoney(budget)}</span>
+                                    <span class="font-bold text-dynastyPurple font-sans">${percent}%</span>
+                                </div>
+                                <!-- Progress bar -->
+                                <div class="w-full bg-reseda/20 h-1.5 rounded-full overflow-hidden mt-1">
+                                    <div class="${isOverBudget ? 'bg-slate-400' : 'bg-dynastyPurple'} h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(165,148,249,0.3)]" style="width: ${percent}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        budgetSection = `
+                            <div class="space-y-1 mt-3 font-sans text-navy">
+                                <div class="flex justify-between items-end">
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] text-cocoa uppercase tracking-wider font-bold font-sans">Инвестировано</span>
+                                        <span class="text-3xl font-black text-dynastyBlack leading-none tracking-tight font-sans mt-0.5">${formatMoney(spent)}</span>
+                                    </div>
+                                    <span class="text-dynastyPurple font-bold bg-dynastyPurple/10 px-2 py-1 rounded text-[10px] border border-dynastyPurple/20 font-sans">Без лимита</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    grid.innerHTML += `
+                        <div onclick="openProjectDetail('${pId}')" class="chrome-border chrome-border-hover p-4 rounded-2xl transition-all duration-300 cursor-pointer shadow-md hover:shadow-xl group relative flex flex-col justify-between min-h-[140px] text-navy font-sans">
+                            <div>
+                                <div class="flex justify-between items-start gap-2 mb-2 font-sans">
+                                    <h4 class="font-bold text-base text-navy group-hover:text-dynastyPurple transition-colors leading-tight font-sans">${getProjName(p)}</h4>
+                                    ${getStatusBadge(getProjStatus(p))}
+                                </div>
+                                ${budgetSection}
+                            </div>
+                            <div class="flex justify-end items-center mt-3 text-[11px] text-[#59453B] font-semibold font-sans">
+                                <span class="flex items-center gap-1 text-dynastyPurple font-bold group-hover:text-dynastyPurpleHover transition-colors font-sans">
+                                    Перейти к смете
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            var recentExpenses = [];
+            try {
+                var preFiltered = expenses.filter(e => {
+                    const amt = getExpAmount(e);
+                    const date = getExpDate(e);
+                    return (amt > 0) && (date || getExpMainCat(e) || getExpSubCat(e));
+                });
+                
+                recentExpenses = sortExpenses(preFiltered, recentExpensesSortCol, recentExpensesSortAsc).slice(0, 50);
+            } catch (err) {
+                console.error("Error sorting recent expenses: ", err);
+                recentExpenses = expenses.slice(0, 50);
+            }
+
+            const recentTbody = document.getElementById('recent-expenses-tbody');
+            if (recentTbody) {
+                recentTbody.innerHTML = '';
+
+                if (recentExpenses.length === 0) {
+                    recentTbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-cocoa/50 font-medium font-sans">Расходные операции не обнаружены. Внесите первый расход.</td></tr>`;
+                } else {
+                    recentExpenses.forEach(e => {
+                        try {
+                            const pId = getExpProjId(e);
+                            const proj = projects.find(p => isExpenseLinkedToProject(e, p));
+                            const projName = proj ? getProjName(proj) : (pId ? pId : "Общие трэки");
+                            
+                            recentTbody.innerHTML += `
+                                <tr class="hover:bg-reseda/5 transition-colors font-sans text-navy">
+                                    <td class="p-3 pl-2 font-extrabold text-navy text-xs">${projName}</td>
+                                    <td class="p-3 text-cocoa text-xs font-bold">${formatDateStr(getExpDate(e))}</td>
+                                    <td class="p-3"><span class="bg-dynastyPurple/10 text-[#7C3AED] px-2.5 py-0.5 rounded border border-dynastyPurple/20 text-[10px] font-black">${getExpMainCat(e)}</span></td>
+                                    <td class="p-3 text-navy text-xs font-bold">${getExpSubCat(e) || '—'}</td>
+                                    <td class="p-3 text-cocoa text-xs italic max-w-[180px] truncate" title="${getExpComment(e)}">${getExpComment(e) || '—'}</td>
+                                    <td class="p-3 text-right pr-2 font-black text-dynastyPurple text-xs">${formatMoney(getExpAmount(e))}</td>
+                                    <td class="p-3 text-center whitespace-nowrap">
+                                        <button onclick="openEditExpenseModal('${getExpID(e)}')" class="text-cocoa/60 hover:text-dynastyPurple p-1 rounded transition-colors mr-1" title="Редактировать">
+                                            <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </button>
+                                        <button onclick="deleteExpense('${getExpID(e)}')" class="text-cocoa/60 hover:text-red-700 p-1 rounded transition-colors" title="Удалить">
+                                            <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        } catch (rowError) {
+                            console.warn("Error rendering row: ", rowError);
+                        }
+                    });
+                }
+            }
+
+            updateSortIndicators();
+            populateDashboardChartSelector();
+            
+            updateDashboardStats();
+        }
+
+        function setStatsFilter(val) {
+            selectedStatsFilter = val;
+            renderDashboard();
+        }
+
+        // Tab Switching Setup
+        function switchTab(tabName) {
+            const tabDash = document.getElementById('tab-dashboard');
+            const tabProj = document.getElementById('tab-project-details');
+            const tabInst = document.getElementById('tab-instructions');
+
+            if (tabDash) tabDash.classList.add('hidden');
+            if (tabProj) tabProj.classList.add('hidden');
+            if (tabInst) tabInst.classList.add('hidden');
+
+            const navDash = document.getElementById('nav-dashboard');
+            if (navDash) {
+                navDash.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-[#59453B] hover:text-[#0B2240]";
+            }
+
+            if (tabName === 'dashboard') {
+                if (tabDash) tabDash.classList.remove('hidden');
+                if (navDash) {
+                    navDash.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-creamSoft text-[#0B2240] shadow-sm font-bold border border-reseda/20";
+                }
+                activeProjectId = null;
+                if (googleScriptUrl) {
+                    loadDataFromGoogleSheets();
+                } else {
+                    renderDashboard();
+                }
+            } else if (tabName === 'project-details') {
+                if (tabProj) tabProj.classList.remove('hidden');
+            } else if (tabName === 'instructions') {
+                if (tabInst) tabInst.classList.remove('hidden');
+            }
+        }
+
+        function updateDashboardStats() {
+            const selectedValue = selectedStatsFilter;
+            let filteredExpenses = [];
+            
+            const totalSpentLabel = document.getElementById('stat-total-spent-label');
+            const totalSpentSub = document.getElementById('stat-total-spent-sub');
+            const monthlySpentLabel = document.getElementById('stat-monthly-spent-label');
+            const monthlySpentSub = document.getElementById('stat-monthly-spent-sub');
+            const avgSpentLabel = document.getElementById('stat-avg-spent-label');
+            const avgSpentSub = document.getElementById('stat-avg-spent-sub');
+            
+            if (selectedValue === "all") {
+                filteredExpenses = expenses;
+                if (totalSpentLabel) totalSpentLabel.innerText = "Общий семейный капитал";
+                if (totalSpentSub) totalSpentSub.innerText = "Суммарные вложения во все объекты недвижимости";
+                
+                if (monthlySpentLabel) monthlySpentLabel.innerText = "В текущем месяце";
+                if (monthlySpentSub) monthlySpentSub.innerText = "Сумма всех расходов за текущий месяц";
+                
+                if (avgSpentLabel) avgSpentLabel.innerText = "Средний чек сметы";
+                if (avgSpentSub) avgSpentSub.innerText = "Средняя стоимость одного платежа";
+            } else {
+                filteredExpenses = expenses.filter(e => isExpenseLinkedToProject(e, projects.find(p => getProjID(p) === selectedValue)));
+                const proj = projects.find(p => String(getProjID(p)).trim() === String(selectedValue).trim());
+                const projName = proj ? getProjName(proj) : "объекта";
+                
+                if (totalSpentLabel) totalSpentLabel.innerText = "Инвестировано в объект";
+                if (totalSpentSub) totalSpentSub.innerText = `Инвестиции по объекту "${projName}"`;
+                
+                if (monthlySpentLabel) monthlySpentLabel.innerText = "Траты объекта за месяц";
+                if (monthlySpentSub) monthlySpentSub.innerText = `Траты на "${projName}" в текущем месяце`;
+                
+                if (avgSpentLabel) avgSpentLabel.innerText = "Средний чек объекта";
+                if (avgSpentSub) avgSpentSub.innerText = `Средний платёж по "${projName}"`;
+            }
+            
+            let totalSpent = 0;
+            filteredExpenses.forEach(e => {
+                totalSpent += getExpAmount(e);
+            });
+            const statTotalSpentEl = document.getElementById('stat-total-spent');
+            if (statTotalSpentEl) statTotalSpentEl.innerText = formatMoney(totalSpent);
+            
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+            let spentThisMonth = 0;
+            
+            filteredExpenses.forEach(e => {
+                const dateStr = getExpDate(e);
+                if (!dateStr) return;
+                const d = parseSafeDate(dateStr);
+                if (!isNaN(d.getTime()) && d.getTime() !== 0) {
+                    if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+                        spentThisMonth += getExpAmount(e);
+                    }
+                }
+            });
+            const statMonthlySpentEl = document.getElementById('stat-monthly-spent');
+            if (statMonthlySpentEl) statMonthlySpentEl.innerText = formatMoney(spentThisMonth);
+            
+            const avgSpent = filteredExpenses.length > 0 ? (totalSpent / filteredExpenses.length) : 0;
+            const statAvgSpentEl = document.getElementById('stat-avg-spent');
+            if (statAvgSpentEl) statAvgSpentEl.innerText = formatMoney(avgSpent);
+            
+            const chartSelector = document.getElementById('dashboard-chart-selector');
+            if (chartSelector) {
+                if (selectedValue === 'all') {
+                    if (chartSelector.value !== 'all-categories' && chartSelector.value !== 'project-shares') {
+                        chartSelector.value = 'all-categories';
+                    }
+                } else {
+                    chartSelector.value = selectedValue;
+                }
+            }
+            
+            // ДИНАМИЧЕСКИЙ ЗАГОЛОВОК СТРУКТУРЫ РАСХОДОВ ДЛЯ МГНОВЕННОЙ ИНФОРМАТИВНОСТИ
+            const shareTitleEl = document.getElementById('dashboard-share-chart-title');
+            if (shareTitleEl) {
+                if (selectedValue === 'all') {
+                    if (chartSelector && chartSelector.value === 'project-shares') {
+                        shareTitleEl.innerText = "Доли инвестиций по объектам";
+                    } else {
+                        shareTitleEl.innerText = "Структура расходов по всем объектам";
+                    }
+                } else {
+                    const projObj = projects.find(p => getProjID(p) === selectedValue);
+                    shareTitleEl.innerText = `Расходы: ${projObj ? getProjName(projObj) : ''}`;
+                }
+            }
+            
+            updateDashboardShareChart();
+            buildDashboardChartsFiltered(filteredExpenses);
+        }
+
+        function populateDashboardChartSelector() {
+            const selector = document.getElementById('dashboard-chart-selector');
+            if (!selector) return;
+
+            const currentValue = selector.value || "all-categories";
+
+            selector.innerHTML = `
+                <option value="all-categories">Все категории трат</option>
+                <option value="project-shares">Доли объектов (всего)</option>
+            `;
+
+            projects.forEach(p => {
+                selector.innerHTML += `<option value="${getProjID(p)}">Объект: ${getProjName(p)}</option>`;
+            });
+
+            if ([...selector.options].some(o => o.value === currentValue)) {
+                selector.value = currentValue;
+            } else {
+                selector.value = "all-categories";
+            }
+        }
+
+        function updateDashboardShareChart() {
+            const selector = document.getElementById('dashboard-chart-selector');
+            if (!selector) return;
+            const mode = selector.value;
+
+            const ctxShare = document.getElementById('dashboard-share-chart').getContext('2d');
+            if (dashShareChartInstance) {
+                dashShareChartInstance.destroy();
+            }
+
+            let labels = [];
+            let data = [];
+
+            const chartColors = [
+                'rgba(165, 148, 249, 0.40)', 
+                'rgba(198, 243, 31, 0.40)',  
+                'rgba(253, 164, 175, 0.40)', 
+                'rgba(56, 189, 248, 0.40)',  
+                'rgba(244, 114, 182, 0.40)', 
+                'rgba(143, 160, 131, 0.40)', 
+                'rgba(147, 197, 253, 0.40)', 
+                'rgba(124, 58, 237, 0.40)',  
+                'rgba(203, 213, 225, 0.40)'  
+            ];
+            
+            const chartBorders = [
+                'rgba(165, 148, 249, 0.40)',
+                'rgba(198, 243, 31, 0.40)',  
+                'rgba(253, 164, 175, 0.40)',
+                'rgba(56, 189, 248, 0.40)',
+                'rgba(244, 114, 182, 0.40)',
+                'rgba(143, 160, 131, 0.40)',
+                'rgba(147, 197, 253, 0.40)',
+                'rgba(124, 58, 237, 0.40)',
+                'rgba(203, 213, 225, 0.40)'
+            ];
+
+            if (mode === 'all-categories') {
+                const categorySums = {};
+                expenses.forEach(e => {
+                    const cat = getExpMainCat(e);
+                    categorySums[cat] = (categorySums[cat] || 0) + getExpAmount(e);
+                });
+                labels = Object.keys(categorySums);
+                data = Object.values(categorySums);
+            } else if (mode === 'project-shares') {
+                const projectCosts = {};
+                projects.forEach(p => { projectCosts[getProjID(p)] = 0; });
+                expenses.forEach(e => {
+                    const amt = getExpAmount(e);
+                    projects.forEach(p => {
+                        const pId = getProjID(p);
+                        if (isExpenseLinkedToProject(e, p)) {
+                            projectCosts[pId] += amt;
+                        }
+                    });
+                });
+                projects.forEach(p => {
+                    labels.push(getProjName(p));
+                    data.push(projectCosts[getProjID(p)] || 0);
+                });
+            } else {
+                const projectId = mode;
+                const projExpenses = expenses.filter(e => isExpenseLinkedToProject(e, projects.find(p => getProjID(p) === projectId)));
+                const categorySums = {};
+                projExpenses.forEach(e => {
+                    const cat = getExpMainCat(e);
+                    categorySums[cat] = (categorySums[cat] || 0) + getExpAmount(e);
+                });
+                labels = Object.keys(categorySums);
+                data = Object.values(categorySums);
+            }
+
+            const bgColors = labels.map((_, idx) => chartColors[idx % chartColors.length]);
+            const borderColors = labels.map((_, idx) => chartBorders[idx % chartBorders.length]);
+
+            dashShareChartInstance = new Chart(ctxShare, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: bgColors,
+                        borderColor: borderColors,
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.label + ': ' + formatMoney(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            const listEl = document.getElementById('dashboard-category-totals-list');
+            if (listEl) {
+                listEl.innerHTML = '';
+                const items = labels.map((l, idx) => ({ 
+                    label: l, 
+                    value: data[idx], 
+                    color: bgColors[idx],
+                    borderColor: borderColors[idx]
+                }));
+                
+                items.sort((a, b) => b.value - a.value);
+                
+                items.forEach(item => {
+                    if (item.label === "Расходы отсутствуют" && item.value === 1) {
+                        listEl.innerHTML = `<div class="text-cocoa/50 italic text-center py-4 text-xs font-medium font-sans">Расходы отсутствуют</div>`;
+                        return;
+                    }
+                    // СДЕЛАНО КЛИКАБЕЛЬНЫМ СТИЛИЗОВАННЫМ СПИСКОМ С ОПЦИЕЙ ПОДРОБНОГО МОДАЛЬНОГО ОКНА ТРАТ
+                    listEl.innerHTML += `
+                        <div onclick="handleShareItemClick('${item.label}')" class="flex justify-between items-center py-1.5 px-2 rounded-lg border-b border-reseda/10 last:border-b-0 font-sans text-navy cursor-pointer hover:bg-dynastyPurple/10 transition-all" title="Нажмите для просмотра всех трат">
+                            <div class="flex items-center space-x-1.5 truncate mr-2">
+                                <span class="w-2.5 h-2.5 rounded-full shrink-0 border" style="background-color: ${item.color}; border-color: ${item.borderColor}"></span>
+                                <span class="truncate font-bold text-navy text-[11px] font-sans" title="${item.label}">${item.label}</span>
+                            </div>
+                            <span class="font-extrabold text-[#7C3AED] text-[11px] shrink-0 font-sans">${formatMoney(item.value)}</span>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // ОБРАБОТЧИК КЛИКОВ ПО СПИСКУ ДОЛЕЙ РАСХОДОВ
+        function handleShareItemClick(label) {
+            const selector = document.getElementById('dashboard-chart-selector');
+            const mode = selector ? selector.value : 'all-categories';
+            if (mode === 'project-shares') {
+                const proj = projects.find(p => getProjName(p) === label);
+                if (proj) {
+                    openProjectDetail(getProjID(proj));
+                }
+            } else {
+                showCategoryExpenses(label);
+            }
+        }
+
+        // МОДАЛЬНОЕ ОКНО ДЕТАЛИЗАЦИИ РАСХОДОВ ПО ВЫБРАННОЙ КАТЕГОРИИ
+        function showCategoryExpenses(categoryName) {
+            const titleEl = document.getElementById('category-details-title');
+            const subtitleEl = document.getElementById('category-details-subtitle');
+            const tbody = document.getElementById('category-details-tbody');
+            const totalEl = document.getElementById('category-details-total');
+            
+            if (!tbody || !titleEl || !subtitleEl || !totalEl) return;
+            
+            titleEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-dynastyPurple shadow-[0_0_8px_#A594F9]"></span> Расходы по группе: ${categoryName}`;
+            
+            // Фильтруем расходы по текущей активной категории
+            let filtered = expenses.filter(e => getExpMainCat(e).toLowerCase() === categoryName.toLowerCase());
+            
+            let contextText = "Все объекты недвижимости";
+            const activeProjId = selectedStatsFilter;
+            
+            if (activeProjId !== "all") {
+                const activeProj = projects.find(p => getProjID(p) === activeProjId);
+                if (activeProj) {
+                    filtered = filtered.filter(e => isExpenseLinkedToProject(e, activeProj));
+                    contextText = `Объект: ${getProjName(activeProj)}`;
+                }
+            }
+            
+            subtitleEl.innerText = contextText;
+            tbody.innerHTML = '';
+            
+            let totalSum = 0;
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-cocoa/50 font-medium">Нет зарегистрированных трат в этой категории.</td></tr>`;
+            } else {
+                // Сортировка по дате (свежие вверху)
+                sortExpenses(filtered, "date", false);
+                
+                filtered.forEach(e => {
+                    totalSum += getExpAmount(e);
+                    const pId = getExpProjId(e);
+                    const proj = projects.find(p => isExpenseLinkedToProject(e, p));
+                    const projName = proj ? getProjName(proj) : (pId ? pId : "Общие траты");
+                    
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-reseda/5 transition-colors font-sans text-navy text-xs">
+                            <td class="p-2.5 font-bold text-cocoa">${formatDateStr(getExpDate(e))}</td>
+                            <td class="p-2.5 font-extrabold text-navy truncate max-w-[120px]" title="${projName}">${projName}</td>
+                            <td class="p-2.5 font-bold text-navy">${getExpSubCat(e) || '—'}</td>
+                            <td class="p-2.5 text-cocoa italic truncate max-w-[150px]" title="${getExpComment(e)}">${getExpComment(e) || '—'}</td>
+                            <td class="p-2.5 text-right font-black text-dynastyPurple">${formatMoney(getExpAmount(e))}</td>
+                            <td class="p-2.5 text-center whitespace-nowrap">
+                                <button onclick="closeCategoryDetailsModal(); openEditExpenseModal('${getExpID(e)}')" class="text-cocoa/60 hover:text-dynastyPurple p-1 rounded transition-colors mr-1" title="Редактировать">
+                                    <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </button>
+                                <button onclick="closeCategoryDetailsModal(); deleteExpense('${getExpID(e)}')" class="text-cocoa/60 hover:text-red-700 p-1 rounded transition-colors" title="Удалить">
+                                    <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            totalEl.innerText = formatMoney(totalSum);
+            document.getElementById('modal-category-details').classList.remove('hidden');
+        }
+
+        function closeCategoryDetailsModal() {
+            document.getElementById('modal-category-details').classList.add('hidden');
+        }
+
+        function getCategoryColor(catName) {
+            const clean = String(catName).trim().toLowerCase();
+            if (clean.includes("фундамент")) return 'rgba(165, 148, 249, 0.40)'; 
+            if (clean.includes("сантехника")) return 'rgba(244, 114, 182, 0.40)'; 
+            if (clean.includes("земля") || clean.includes("документ") || clean.includes("оформление")) return 'rgba(198, 243, 31, 0.40)';  
+            if (clean.includes("стены")) return 'rgba(56, 189, 248, 0.40)';  
+            if (clean.includes("крыша")) return 'rgba(253, 164, 175, 0.40)'; 
+            if (clean.includes("работа") || clean.includes("бригад")) return 'rgba(143, 160, 131, 0.40)'; 
+            if (clean.includes("подготовительн")) return 'rgba(147, 197, 253, 0.40)'; 
+            if (clean.includes("электрика") || clean.includes("проводка")) return 'rgba(124, 58, 237, 0.40)';  
+            if (clean.includes("отделка")) return 'rgba(203, 213, 225, 0.40)'; 
+            return 'rgba(148, 163, 184, 0.40)';
+        }
+
+        function buildDashboardChartsFiltered(filteredExpenses) {
+            const monthlyData = {};
+            filteredExpenses.forEach(e => {
+                const dateStr = getExpDate(e);
+                if (!dateStr) return;
+                const date = parseSafeDate(dateStr);
+                if (isNaN(date.getTime()) || date.getTime() === 0) return;
+                
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+                
+                monthlyData[key] = (monthlyData[key] || 0) + getExpAmount(e);
+            });
+
+            const sortedMonths = Object.keys(monthlyData).sort();
+            const formattedLabels = sortedMonths.map(m => {
+                const [yr, mn] = m.split('-');
+                const monthsRu = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"];
+                return `${monthsRu[parseInt(mn) - 1]} ${yr}`;
+            });
+            const monthlyValues = sortedMonths.map(m => monthlyData[m]);
+
+            const ctxMonthly = document.getElementById('dashboard-monthly-chart').getContext('2d');
+            if (dashMonthlyChartInstance) {
+                dashMonthlyChartInstance.destroy();
+            }
+
+            dashMonthlyChartInstance = new Chart(ctxMonthly, {
+                type: 'bar',
+                data: {
+                    labels: formattedLabels.length > 0 ? formattedLabels : ["Нет данных"],
+                    datasets: [{
+                        label: 'Затраты за месяц',
+                        data: monthlyValues.length > 0 ? monthlyValues : [0],
+                        backgroundColor: 'rgba(165, 148, 249, 0.40)', // MIND Purple translucent
+                        hoverBackgroundColor: 'rgba(198, 243, 31, 0.70)', // chartreuse glow
+                        borderColor: 'rgba(165, 148, 249, 0.40)', // Сравняли рамку тоже на 40% прозрачности!
+                        borderWidth: 1.5,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Инвестиции: ' + formatMoney(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(11, 34, 64, 0.05)' },
+                            ticks: { color: '#59453B', font: { family: 'Manrope', size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#59453B', font: { family: 'Manrope', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================= PROJECT SPREADSHEET DETAILED VIEW =================
+        function openProjectDetail(id) {
+            activeProjectId = id;
+            switchTab('project-details');
+            
+            const project = projects.find(p => getProjID(p) == id);
+            if (!project) return;
+
+            document.getElementById('detail-project-name').innerText = getProjName(project);
+            document.getElementById('detail-project-status').innerText = getProjStatus(project);
+            
+            const uniqueProjCats = [...new Set(expenses.filter(e => isExpenseLinkedToProject(e, project)).map(e => getExpMainCat(e)))];
+            
+            const filterSel = document.getElementById('filter-category');
+            filterSel.innerHTML = '<option value="all">Все категории сметы</option>';
+            uniqueProjCats.forEach(cat => {
+                if (cat) {
+                    filterSel.innerHTML += `<option value="${cat}">${cat}</option>`; 
+                }
+            });
+
+            renderProjectExpensesTable();
+            renderProjectAnalytics(project);
+        }
+
+        function buildProjectCategoriesChart(dataObj) {
+            const ctx = document.getElementById('project-categories-chart').getContext('2d');
+            
+            if (projCategoriesChartInstance) {
+                projCategoriesChartInstance.destroy();
+            }
+
+            const labels = Object.keys(dataObj);
+            const data = Object.values(dataObj);
+
+            if (labels.length === 0) {
+                labels.push("Расходы отсутствуют");
+                data.push(1);
+            }
+
+            const bgColors = labels.map(l => getCategoryColor(l));
+            const borderColors = labels.map(l => getCategoryColor(l));
+
+            projCategoriesChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: bgColors,
+                        borderColor: borderColors,
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.label + ': ' + formatMoney(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            const listEl = document.getElementById('project-category-totals-list');
+            if (listEl) {
+                listEl.innerHTML = '';
+                const items = labels.map((l, idx) => ({ 
+                    label: l, 
+                    value: data[idx], 
+                    color: bgColors[idx],
+                    borderColor: borderColors[idx]
+                }));
+                
+                items.sort((a, b) => b.value - a.value);
+                
+                items.forEach(item => {
+                    if (item.label === "Расходы отсутствуют" && item.value === 1) {
+                        listEl.innerHTML = `<div class="text-cocoa/50 italic text-center py-4 text-xs font-medium font-sans">Расходы отсутствуют</div>`;
+                        return;
+                    }
+                    listEl.innerHTML += `
+                        <div class="flex justify-between items-center py-1 border-b border-reseda/10 last:border-b-0 font-sans text-navy">
+                            <div class="flex items-center space-x-1.5 truncate mr-2">
+                                <span class="w-2.5 h-2.5 rounded-full shrink-0 border" style="background-color: ${item.color}; border-color: ${item.borderColor}"></span>
+                                <span class="truncate font-semibold text-navy text-[11px] font-sans" title="${item.label}">${item.label}</span>
+                            </div>
+                            <span class="font-extrabold text-[#7C3AED] text-[11px] shrink-0 font-sans">${formatMoney(item.value)}</span>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function renderProjectAnalytics(project) {
+            const projId = getProjID(project);
+            const projExpenses = expenses.filter(e => isExpenseLinkedToProject(e, project));
+            const spent = projExpenses.reduce((sum, e) => sum + getExpAmount(e), 0);
+
+            const detailSpentEl = document.getElementById('detail-spent');
+            if (detailSpentEl) {
+                detailSpentEl.innerText = formatMoney(spent);
+            }
+
+            const categorySums = {};
+            projExpenses.forEach(e => {
+                const cat = getExpMainCat(e) || "Прочее";
+                categorySums[cat] = (categorySums[cat] || 0) + getExpAmount(e);
+            });
+
+            buildProjectCategoriesChart(categorySums);
+            buildProjectMonthlyChart(projExpenses);
+        }
+
+        function buildProjectMonthlyChart(projExpenses) {
+            const monthlySums = {};
+            
+            projExpenses.forEach(e => {
+                const dateStr = getExpDate(e);
+                if (!dateStr) return;
+                const date = parseSafeDate(dateStr);
+                if (isNaN(date.getTime()) || date.getTime() === 0) return;
+                
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+                
+                monthlySums[key] = (monthlySums[key] || 0) + getExpAmount(e);
+            });
+
+            const sortedKeys = Object.keys(monthlySums).sort();
+            const labels = sortedKeys.map(k => {
+                const [yr, mn] = k.split('-');
+                const monthsRu = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"];
+                return `${monthsRu[parseInt(mn) - 1]} ${yr}`;
+            });
+            const values = sortedKeys.map(k => monthlySums[k]);
+
+            const ctx = document.getElementById('project-monthly-chart').getContext('2d');
+            if (projMonthlyChartInstance) {
+                projMonthlyChartInstance.destroy();
+            }
+
+            projMonthlyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.length > 0 ? labels : ["Нет расходов"],
+                    datasets: [{
+                        label: 'Затраты по месяцам',
+                        data: values.length > 0 ? values : [0],
+                        backgroundColor: 'rgba(165, 148, 249, 0.40)', // MIND Purple
+                        hoverBackgroundColor: 'rgba(198, 243, 31, 0.70)', // chartreuse glow
+                        borderColor: 'rgba(165, 148, 249, 0.40)', // Сравняли рамку тоже на 40% прозрачности!
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Сумма: ' + formatMoney(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(11, 34, 64, 0.05)' },
+                            ticks: { color: '#59453B', font: { family: 'Manrope', size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#59453B', font: { family: 'Manrope', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderProjectExpensesTable() {
+            const filterVal = document.getElementById('filter-category').value;
+            const tbody = document.getElementById('project-expenses-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const project = projects.find(p => String(getProjID(p)).trim() === String(activeProjectId).trim());
+            const projExpenses = expenses.filter(e => isExpenseLinkedToProject(e, project));
+            const filteredExpenses = filterVal === 'all' 
+                ? projExpenses 
+                : projExpenses.filter(e => getExpMainCat(e) === filterVal);
+
+            sortExpenses(filteredExpenses, projectExpensesSortCol, projectExpensesSortAsc);
+
+            if (filteredExpenses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-cocoa/70 text-xs font-semibold font-sans font-medium">Расходов в данной категории не найдено.</td></tr>`;
+                return;
+            }
+
+            filteredExpenses.forEach(e => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-reseda/5 transition-colors text-navy font-sans text-xs">
+                        <td class="p-3 font-bold">${formatDateStr(getExpDate(e))}</td>
+                        <td class="p-3"><span class="bg-resedaLight text-chive border border-reseda/30 px-2.5 py-0.5 rounded text-[10px] font-bold">${getExpMainCat(e)}</span></td>
+                        <td class="p-3 font-bold">${getExpSubCat(e) || '—'}</td>
+                        <td class="p-3 text-cocoa/80 font-medium max-w-[150px] truncate" title="${getExpComment(e)}">${getExpComment(e) || '—'}</td>
+                        <td class="p-3 text-right font-black text-dynastyPurple whitespace-nowrap">${formatMoney(getExpAmount(e))}</td>
+                        <td class="p-3 text-center whitespace-nowrap">
+                            <button onclick="openEditExpenseModal('${getExpID(e)}')" class="text-cocoa/60 hover:text-dynastyPurple p-1 rounded transition-colors mr-1" title="Редактировать">
+                                <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+                            <button onclick="deleteExpense('${getExpID(e)}')" class="text-cocoa/60 hover:text-red-700 p-1 rounded transition-colors" title="Удалить трату">
+                                <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            updateSortIndicators();
+        }
+
+        // ================= REMOVE & ADD LOGIC =================
+        async function deleteExpense(id) {
+            openConfirmModal(
+                "Удалить расход?", 
+                "Вы действительно хотите навсегда удалить эту запись?", 
+                async () => {
+                    lastWriteTime = Date.now();
+                    
+                    // Мгновенное оптимистичное удаление из локального состояния
+                    expenses = expenses.filter(e => String(getExpID(e)) !== String(id));
+                    saveLocalState();
+                    
+                    if (activeProjectId) {
+                        const currentProj = projects.find(p => getProjID(p) == activeProjectId);
+                        if (currentProj) {
+                            renderProjectAnalytics(currentProj);
+                            renderProjectExpensesTable();
+                        }
+                    }
+                    renderDashboard();
+                    closeConfirmModal();
+                    
+                    if (googleScriptUrl) {
+                        showToast("Удаляем из Google Таблицы...", "info");
+                        try {
+                            await apiRequest({ action: 'deleteExpense', id: id });
+                            showToast("Расход успешно удален в облаке!", "success");
+                            // Моментальный синхронный перезапрос вместо ожидания setTimeout
+                            await loadDataFromGoogleSheets();
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    } else {
+                        showToast("Расход успешно удален (локально)", "success");
+                    }
+                }
+            );
+        }
+
+        async function deleteCurrentProject() {
+            const projectIdToDelete = activeProjectId; // Фиксируем нужный ID до смены вкладок!
+            if (!projectIdToDelete) {
+                showToast("Проект не выбран для удаления", "error");
+                return;
+            }
+            openConfirmModal(
+                "Удалить весь объект?", 
+                "Вы собираетесь полностью удалить этот проект и все его расходы. Это действие нельзя отменить.", 
+                async () => {
+                    lastWriteTime = Date.now();
+                    closeConfirmModal();
+                    
+                    // Оптимистичное удаление из локального состояния
+                    projects = projects.filter(p => String(getProjID(p)) !== String(projectIdToDelete));
+                    expenses = expenses.filter(e => String(getExpProjId(e)) !== String(projectIdToDelete));
+                    saveLocalState();
+                    
+                    // Переключаемся на дашборд визуально, блокируя повторные конкурирующие запросы
+                    const tempUrl = googleScriptUrl;
+                    googleScriptUrl = ""; 
+                    switchTab('dashboard');
+                    googleScriptUrl = tempUrl; 
+                    renderDashboard(); // Рисуем дашборд без удаленного проекта
+
+                    if (googleScriptUrl) {
+                        showToast("Удаляем проект из Google Таблицы...", "info");
+                        try {
+                            await apiRequest({ action: 'deleteProject', id: projectIdToDelete });
+                            showToast("Проект успешно удален из облака!", "success");
+                            // Чистый перезапрос обновленных данных с сервера
+                            await loadDataFromGoogleSheets();
+                        } catch (error) {
+                            console.error(error);
+                            showToast("Сбой удаления с сервера. Попробуйте обновить страницу.", "error");
+                        }
+                    } else {
+                        showToast("Проект успешно удален (локально)", "success");
+                    }
+                }
+            );
+        }
+
+        // ================= MODAL & WINDOWS LOGIC =================
+        function openExpenseModal() {
+            editExpenseId = null;
+            document.getElementById('form-expense').reset();
+            document.getElementById('modal-expense').classList.remove('hidden');
+            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('expense-modal-title').innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-dynastyPurple shadow-[0_0_8px_#A594F9]"></span>Новая запись расхода`;
+            document.getElementById('btn-submit-expense').innerText = "Записать";
+        }
+
+        function openEditExpenseModal(id) {
+            const exp = expenses.find(e => String(getExpID(e)) === String(id));
+            if (!exp) return;
+            
+            editExpenseId = id;
+            document.getElementById('modal-expense').classList.remove('hidden');
+            document.getElementById('expense-modal-title').innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-dynastyLime shadow-[0_0_8px_#C6F31F]"></span>Редактирование расхода`;
+            document.getElementById('btn-submit-expense').innerText = "Сохранить изменения";
+            
+            document.getElementById('expense-project').value = getExpProjId(exp);
+            
+            const d = parseSafeDate(getExpDate(exp));
+            if (!isNaN(d.getTime())) {
+                document.getElementById('expense-date').value = d.toISOString().split('T')[0];
+            }
+            
+            document.getElementById('expense-amount').value = getExpAmount(exp);
+            
+            let catSelect = document.getElementById('expense-main-category');
+            let mainCat = getExpMainCat(exp);
+            if (![...catSelect.options].map(o => o.value).includes(mainCat)) {
+                 catSelect.innerHTML += `<option value="${mainCat}">${mainCat}</option>`;
+            }
+            catSelect.value = mainCat;
+            
+            document.getElementById('expense-sub-category').value = getExpSubCat(exp);
+            document.getElementById('expense-comment').value = getExpComment(exp);
+        }
+
+        function openProjectModal() {
+            document.getElementById('modal-project').classList.remove('hidden');
+        }
+
+        function openSettingsModal() {
+            document.getElementById('api-url-input').value = googleScriptUrl;
+            document.getElementById('modal-settings').classList.remove('hidden');
+        }
+
+        function populateFormDropdowns() {
+            const expProjSel = document.getElementById('expense-project');
+            if (expProjSel) {
+                expProjSel.innerHTML = projects.map(p => `<option value="${getProjID(p)}">${getProjName(p)}</option>`).join('');
+            }
+
+            const expCatSel = document.getElementById('expense-main-category');
+            if (expCatSel) {
+                expCatSel.innerHTML = categories.map(c => {
+                    const catName = getFlexValue(c, ["Общая категория", "Общая category", "Category", "category", "Name", "name", "Группа"]);
+                    return `<option value="${catName}">${catName}</option>`;
+                }).join('');
+            }
+        }
+
+        function closeExpenseModal() {
+            document.getElementById('modal-expense').classList.add('hidden');
+        }
+        function closeProjectModal() {
+            document.getElementById('modal-project').classList.add('hidden');
+        }
+        function closeSettingsModal() {
+            document.getElementById('modal-settings').classList.add('hidden');
+        }
+
+        // Saving expense row
+        async function submitExpenseForm(e) {
+            if(e) e.preventDefault();
+            
+            const projId = document.getElementById('expense-project').value;
+            const date = document.getElementById('expense-date').value;
+            const amount = document.getElementById('expense-amount').value;
+            const mainCat = document.getElementById('expense-main-category').value;
+            const subCat = document.getElementById('expense-sub-category').value;
+            const comment = document.getElementById('expense-comment').value;
+
+            if (!projId || !date || !amount || !mainCat) {
+                showToast("Пожалуйста, заполните все обязательные поля (Объект, Дата, Сумма, Категория)", "error");
+                return;
+            }
+
+            lastWriteTime = Date.now();
+
+            if (editExpenseId) {
+                // РЕЖИМ РЕДАКТИРОВАНИЯ
+                let expIndex = expenses.findIndex(ex => String(getExpID(ex)) === String(editExpenseId));
+                if(expIndex !== -1) {
+                    expenses[expIndex]["ID Проекта"] = projId;
+                    expenses[expIndex]["Дата"] = date;
+                    expenses[expIndex]["Общая категория"] = mainCat;
+                    expenses[expIndex]["Категория"] = subCat;
+                    expenses[expIndex]["Сумма"] = amount;
+                    expenses[expIndex]["Комментарий"] = comment;
+                }
+                
+                normalizeData();
+                closeExpenseModal();
+                if (String(activeProjectId) === String(projId)) {
+                    openProjectDetail(projId);
+                }
+                renderDashboard();
+
+                if (googleScriptUrl) {
+                    showToast("Сохранение изменений...", "info");
+                    try {
+                        const payload = {
+                            action: "editExpense",
+                            id: String(editExpenseId),
+                            projectId: String(projId),
+                            date: date,
+                            category: subCat,
+                            mainCategory: mainCat,
+                            amount: String(amount),
+                            comment: comment
+                        };
+
+                        await apiRequest(payload);
+                        showToast("Расход успешно обновлен в облаке!", "success");
+                        await loadDataFromGoogleSheets();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                } else {
+                    saveLocalState();
+                    showToast("Изменения сохранены", "success");
+                }
+            } else {
+                // РЕЖИМ СОЗДАНИЯ
+                const validIds = expenses.map(exp => parseInt(getExpID(exp)) || 0).filter(n => !isNaN(n));
+                const localNextId = validIds.length > 0 ? Math.max(0, ...validIds) + 1 : 1;
+
+                const tempExpenseObj = {
+                    ID: String(localNextId),
+                    "ID Проекта": String(projId),
+                    "Дата": date,
+                    "Категория": subCat,
+                    "Общая категория": mainCat,
+                    "Сумма": String(amount),
+                    "Комментарий": comment
+                };
+
+                expenses.push(tempExpenseObj);
+                normalizeData();
+                closeExpenseModal();
+                document.getElementById('form-expense').reset();
+                
+                if (String(activeProjectId) === String(projId)) {
+                    openProjectDetail(projId);
+                }
+                renderDashboard();
+
+                if (googleScriptUrl) {
+                    showToast("Синхронизация трат с Google Таблицей...", "info");
+                    try {
+                        const payload = {
+                            action: "addExpense",
+                            projectId: String(projId),
+                            date: date,
+                            category: subCat,
+                            mainCategory: mainCat,
+                            amount: String(amount),
+                            comment: comment
+                        };
+
+                        const result = await apiRequest(payload);
+                        // Мгновенно заменяем локальный ID на тот, что прилетел с сервера (номер строки)
+                        if (result && result.success && result.id) {
+                            tempExpenseObj.ID = String(result.id);
+                            renderDashboard();
+                            if (activeProjectId === projId) {
+                                renderProjectExpensesTable();
+                            }
+                        }
+                        showToast("Расход успешно сохранен в Google Sheets!", "success");
+                        await loadDataFromGoogleSheets();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                } else {
+                    saveLocalState();
+                    showToast("Расход записан в локальную память", "success");
+                }
+            }
+        }
+
+        // Creating project
+        async function submitProjectForm(e) {
+            if(e) e.preventDefault();
+
+            const name = document.getElementById('project-create-name').value;
+            const budgetVal = document.getElementById('project-create-budget').value.trim();
+            const budget = budgetVal ? String(budgetVal) : "";
+            const status = document.getElementById('project-create-status').value;
+
+            if (!name) {
+                showToast("Пожалуйста, введите название объекта", "error");
+                return;
+            }
+
+            const validIds = projects.map(p => parseInt(getProjID(p)) || 0).filter(n => !isNaN(n));
+            const localNextId = validIds.length > 0 ? Math.max(0, ...validIds) + 1 : 1;
+
+            const tempProjObj = {
+                ID: String(localNextId),
+                "Название": name,
+                "Бюджет": budget,
+                "Статус": status
+            };
+
+            lastWriteTime = Date.now();
+            projects.push(tempProjObj);
+            normalizeData();
+            closeProjectModal();
+            document.getElementById('form-project-create').reset();
+            
+            populateFormDropdowns();
+            renderDashboard();
+
+            if (googleScriptUrl) {
+                showToast("Создаем объект в Google Таблице...", "info");
+                try {
+                    const payload = {
+                        action: "addProject",
+                        name: name,
+                        budget: budget,
+                        status: status
+                    };
+
+                    const result = await apiRequest(payload);
+                    if (result && result.success && result.id) {
+                        const oldId = tempProjObj.ID;
+                        const newId = String(result.id);
+                        
+                        // Если пока шёл запрос, мы открыли детали проекта, обновляем ID
+                        if (String(activeProjectId) === String(oldId)) {
+                            activeProjectId = newId;
+                        }
+                        
+                        tempProjObj.ID = newId;
+                        
+                        // Если в этот момент добавили траты на этот проект, заменяем их ID
+                        expenses.forEach(e => {
+                            if (String(getExpProjId(e)) === String(oldId)) {
+                                e["ID Проекта"] = newId;
+                            }
+                        });
+                        
+                        populateFormDropdowns();
+                        renderDashboard();
+                        
+                        if (activeProjectId === newId) {
+                            openProjectDetail(newId);
+                        }
+                    }
+                    showToast(`Объект "${name}" сохранен в Google Sheets!`, "success");
+                    await loadDataFromGoogleSheets();
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                saveLocalState();
+                showToast(`Объект "${name}" добавлен локально!`, "success");
+            }
+        }
+
+        // Connections Setup
+        function saveSettings() {
+            let val = document.getElementById('api-url-input').value.trim();
+            if (val) {
+                if (!val.includes("script.google.com") || !val.endsWith("/exec")) {
+                    showToast("Убедитесь, что ссылка правильная (заканчивается на /exec)", "error");
+                }
+                localStorage.setItem('hf_google_script_url', val);
+                googleScriptUrl = val;
+                updateConnectionStatusIndicator(true);
+                closeSettingsModal();
+                loadDataFromGoogleSheets();
+            } else {
+                disconnectApi();
+                closeSettingsModal();
+            }
+        }
+
+        function toggleRecentExpensesSort(col) {
+            if (recentExpensesSortCol === col) {
+                recentExpensesSortAsc = !recentExpensesSortAsc;
+            } else {
+                recentExpensesSortCol = col;
+                recentExpensesSortAsc = true;
+            }
+            renderDashboard();
+        }
+
+        function toggleProjectExpensesSort(col) {
+            if (projectExpensesSortCol === col) {
+                projectExpensesSortAsc = !projectExpensesSortAsc;
+            } else {
+                projectExpensesSortCol = col;
+                projectExpensesSortAsc = true;
+            }
+            renderProjectExpensesTable();
+        }
+
+        // УМНЫЙ ЗАПУСК СВЯЗИ ИЗ ЛОКАЛЬНОГО ХРАНИЛИЩА (ЧТОБЫ НАСТРОЙКИ НЕ СБРАСЫВАЛИСЬ ПРИ ПЕРЕЗАГРУЗКЕ)
+        window.onload = function() {
+            let savedUrl = localStorage.getItem('hf_google_script_url');
+            if (savedUrl && savedUrl.trim() !== "") {
+                googleScriptUrl = savedUrl.trim();
+            } else {
+                googleScriptUrl = DEFAULT_API_URL;
+                localStorage.setItem('hf_google_script_url', googleScriptUrl);
+            }
+            updateConnectionStatusIndicator(!!googleScriptUrl);
+            loadDataFromGoogleSheets();
+
+            const confirmBtnYes = document.getElementById('confirm-btn-yes');
+            if (confirmBtnYes) {
+                confirmBtnYes.addEventListener('click', () => {
+                    if (confirmActionCallback) confirmActionCallback();
+                });
+            }
+        };
+    </script>
+</body>
+</html>
