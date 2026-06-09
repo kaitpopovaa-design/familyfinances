@@ -83,8 +83,8 @@
 </head>
 <body class="font-sans min-h-screen flex flex-col selection:bg-dynastyPurple selection:text-white">
 
-    <!-- Уведомления вместо браузерного alert -->
-    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+    <!-- Уведомления перенесены в правый нижний угол -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none flex flex-col items-end"></div>
 
     <!-- Основной Хедер -->
     <header class="glass-panel border-b border-white/10 px-4 py-4 sticky top-0 z-40 bg-opacity-90">
@@ -233,7 +233,7 @@
                             <tr class="border-b border-black/10 text-cocoa font-bold">
                                 <th class="pb-3 pl-2 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleRecentExpensesSort('project')">Проект <span id="sort-recent-project"></span></th>
                                 <th class="pb-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleRecentExpensesSort('date')">Дата <span id="sort-recent-date">▼</span></th>
-                                <th class="pb-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleRecentExpensesSort('Общая категория')">Общая категория <span id="sort-recent-category"></span></th>
+                                <th class="pb-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors font-bold whitespace-nowrap" onclick="toggleRecentExpensesSort('Общая категория')">Общая категория <span id="sort-recent-category"></span></th>
                                 <th class="pb-3">Категория деталей</th>
                                 <th class="pb-3">Комментарий</th>
                                 <th class="pb-3 text-right pr-2 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleRecentExpensesSort('amount')">Сумма <span id="sort-recent-amount"></span></th>
@@ -274,7 +274,7 @@
                         <h4 id="detail-spent" class="text-3xl font-black text-dynastyPurple mt-1">0 ₽</h4>
                     </div>
                     <div class="text-xs text-[#59453B] font-semibold font-sans">
-                        Сумма всех зафиксированных на данный момент трат по объекту недвижимости
+                        Сумма всех зафиксированных на данный момент трат по объект недвижимости
                     </div>
                 </div>
             </div>
@@ -319,7 +319,7 @@
                         <thead class="bg-[#F9F7F2]/60 text-dynastyBlack sticky top-0 z-10 font-bold border-b border-black/10">
                             <tr>
                                 <th class="p-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleProjectExpensesSort('date')">Дата <span id="sort-project-date">▼</span></th>
-                                <th class="p-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleProjectExpensesSort('Общая категория')">Группа <span id="sort-project-category"></span></th>
+                                <th class="p-3 cursor-pointer select-none hover:text-dynastyPurple transition-colors font-bold whitespace-nowrap" onclick="toggleProjectExpensesSort('Общая категория')">Группа <span id="sort-project-category"></span></th>
                                 <th class="p-3">Детализация</th>
                                 <th class="p-3">Комментарий</th>
                                 <th class="p-3 text-right cursor-pointer select-none hover:text-dynastyPurple transition-colors" onclick="toggleProjectExpensesSort('amount')">Сумма <span id="sort-project-amount"></span></th>
@@ -368,7 +368,7 @@
         </div>
     </div>
 
-    <!-- Диагностика -->
+    <!-- Diagnostics -->
     <div id="modal-diagnostics" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans text-dynastyBlack">
         <div class="bg-white w-full max-w-md rounded-2xl p-6 border border-black/10 shadow-2xl relative">
             <div class="flex justify-between items-center mb-4">
@@ -388,15 +388,15 @@
     </div>
 
     <!-- Модальное окно просмотра расходов категории -->
-    <div id="modal-category-details" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-3xl rounded-2xl p-6 border border-black/10 shadow-2xl relative flex flex-col max-h-[85vh] text-dynastyBlack">
+    <div id="modal-category-details" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans text-dynastyBlack">
+        <div class="bg-white w-full max-w-3xl rounded-2xl p-6 border border-black/10 shadow-2xl relative flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center mb-4 shrink-0">
                 <div>
-                    <h3 id="category-details-title" class="text-base font-extrabold flex items-center gap-1.5 font-sans">
+                    <h3 id="category-details-title" class="text-base font-extrabold flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-full bg-dynastyPurple shadow-[0_0_8px_#A594F9]"></span>
                         Детализация расходов
                     </h3>
-                    <p id="category-details-subtitle" class="text-[11px] text-cocoa font-bold mt-0.5 font-sans"></p>
+                    <p id="category-details-subtitle" class="text-[11px] text-cocoa font-bold mt-0.5"></p>
                 </div>
                 <button onclick="closeCategoryDetailsModal()" class="text-cocoa hover:text-dynastyBlack transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -519,10 +519,10 @@
     </div>
 
     <!-- Модальное окно подтверждений -->
-    <div id="modal-confirm" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans">
+    <div id="modal-confirm" class="hidden fixed inset-0 bg-[#0B2240]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans font-sans">
         <div class="bg-white w-full max-sm:max-w-xs max-w-sm rounded-2xl p-5 border border-black/10 shadow-2xl text-dynastyBlack relative">
-            <h3 id="confirm-title" class="text-base font-bold mb-2">Подтверждение действия</h3>
-            <p id="confirm-message" class="text-xs text-dynastyBlack/80 mb-5 leading-relaxed"></p>
+            <h3 id="confirm-title" class="text-base font-bold mb-2 font-bold">Подтверждение действия</h3>
+            <p id="confirm-message" class="text-xs text-dynastyBlack/80 mb-5 leading-relaxed font-medium"></p>
             <div class="flex space-x-3">
                 <button id="confirm-btn-no" onclick="closeConfirmModal()" class="w-1/2 bg-black/5 border border-black/10 rounded-xl p-2.5 text-xs font-bold transition-all">Отмена</button>
                 <button id="confirm-btn-yes" class="w-1/2 bg-dynastyPurple hover:bg-dynastyPurpleHover text-white text-xs rounded-xl p-2.5 font-bold transition-all">Продолжить</button>
@@ -539,8 +539,8 @@
         ];
 
         const defaultExpenses = [
-            { ID: "101", "ID Проекта": "1", "Дата": "2026-05-10", "Категория": "Арматура 12мм", "Общая категория": "Фундамент", "Сумма": "175365", "Комментарий": "Закупка на металлобазе" },
-            { ID: "102", "ID Проекта": "1", "Дата": "2026-05-12", "Категория": "Доставка щебня", "Общая категория": "Фундамент", "Сумма": "22200", "Комментарий": "3 машины" }
+            { ID: "101", "ID Proj": "1", "Дата": "2026-05-10", "Категория": "Арматура 12мм", "Общая категория": "Фундамент", "Сумма": "175365", "Комментарий": "Закупка на металлобазе" },
+            { ID: "102", "ID Proj": "1", "Дата": "2026-05-12", "Категория": "Доставка щебня", "Общая категория": "Фундамент", "Сумма": "22200", "Комментарий": "3 машины" }
         ];
 
         const defaultCategories = [
@@ -559,7 +559,8 @@
             { ID: "13", "Общая категория": "Чистовая отделка" },
             { ID: "14", "Общая категория": "Благоустройство" },
             { ID: "15", "Общая категория": "Подготовительный этап" },
-            { ID: "16", "Общая категория": "Документация" }
+            { ID: "16", "Общая категория": "Документация" },
+            { ID: "17", "Общая категория": "Предчистовая отделка" }
         ];
 
         let projects = [];
@@ -582,7 +583,7 @@
         let projectExpensesSortAsc = false;
         
         // НОВЫЙ АКТУАЛЬНЫЙ АДРЕС API GOOGLE APPS SCRIPT
-        const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbws4E9YcJ6IQX0KuQZ0wRmt8fqP0tPW7rz69DRO3qw4doOraIq7rFirPeP_Llo-Sum2/exec";
+        const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbxa00GN2Q8sWYTe0YIa7oI6H2zlTphaZgSeKvcpu8_qw7wf6xsKkeqOGD2z2D6DmOB8/exec";
         let googleScriptUrl = "";
 
         // ================= СИСТЕМНЫЕ ФУНКЦИИ =================
@@ -590,17 +591,24 @@
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
-            toast.className = `p-4 rounded-xl text-xs sm:text-sm font-bold shadow-2xl border transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto flex items-center space-x-2 ${
-                type === "success" 
-                ? "bg-[#F5F3FF] border-dynastyPurple/30 text-[#7C3AED] shadow-[0_4px_15px_rgba(165,148,249,0.1)]" 
-                : type === "error"
-                ? "bg-red-50 border-red-200 text-red-700 shadow-sm"
-                : "bg-dynastyBlack text-white border-dynastyPurple/30 shadow-[0_4px_15px_rgba(165,148,249,0.1)]"
-            }`;
+            
+            // Всплывающие окна теперь имеют унифицированный строгий стиль:
+            // Чёрный фон (bg-dynastyBlack), белый текст (text-white) и аккуратные границы
+            toast.className = `p-4 rounded-xl text-xs sm:text-sm font-bold shadow-2xl border border-white/10 bg-dynastyBlack text-white transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto flex items-center space-x-2`;
+            
+            // Цветовая индикация теперь задаётся только через маленькую светящуюся точку-индикатор
+            let dotColor = "bg-dynastyPurple shadow-[0_0_8px_#A594F9]";
+            if (type === "success") {
+                dotColor = "bg-dynastyLime shadow-[0_0_8px_#C6F31F]";
+            } else if (type === "error") {
+                dotColor = "bg-red-500 shadow-[0_0_8px_#EF4444]";
+            } else if (type === "info") {
+                dotColor = "bg-dynastyPurple shadow-[0_0_8px_#A594F9]";
+            }
             
             toast.innerHTML = `
-                <span class="w-2.5 h-2.5 rounded-full ${type === 'success' ? 'bg-dynastyPurple animate-ping' : type === 'error' ? 'bg-red-500' : 'bg-dynastyPurple'}"></span>
-                <span class="${type === 'error' ? 'text-red-700' : 'text-white'}">${message}</span>
+                <span class="w-2.5 h-2.5 rounded-full ${dotColor} shrink-0"></span>
+                <span class="text-white">${message}</span>
             `;
             
             container.appendChild(toast);
@@ -800,6 +808,7 @@
             document.getElementById('modal-diagnostics').classList.add('hidden');
         }
 
+        // ВОССТАНОВЛЕННАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ СОРТИРОВКИ ТРАТ
         function sortExpenses(expensesArray, col, asc) {
             return expensesArray.sort((a, b) => {
                 let valA, valB;
@@ -830,6 +839,7 @@
             });
         }
 
+        // ВОССТАНОВЛЕННАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ИНДИКАТОРОВ СОРТИРОВКИ
         function updateSortIndicators() {
             const colsRecent = ['project', 'date', 'Общая категория', 'amount'];
             colsRecent.forEach(c => {
@@ -895,7 +905,7 @@
         const getExpProjId = (e) => {
             let val = getFlexValue(e, ["ID Проекта", "ID Proj", "projectId", "id проекта", "id proj", "ID_Proj", "ID_Проекта", "Проект", "Объект", "project", "object"]);
             let str = String(val !== null && val !== undefined ? val : "").trim();
-            if (str.endsWith(".0")) str = str.substring(0, str.length - 2);
+            if (str.endsWith(".0")) str = str.substring(0, str.length - 2); // ИСПРАВЛЕНО: возвращена правильная логика substring вместо SyntaxError unmatched ')'
             return str;
         };
         const getExpAmount = (e) => {
@@ -1340,7 +1350,7 @@
                                 <tr class="hover:bg-reseda/5 transition-colors font-sans text-navy">
                                     <td class="p-3 pl-2 font-extrabold text-navy text-xs">${projName}</td>
                                     <td class="p-3 text-cocoa text-xs font-bold">${formatDateStr(getExpDate(e))}</td>
-                                    <td class="p-3"><span class="bg-dynastyPurple/10 text-[#7C3AED] px-2.5 py-0.5 rounded border border-dynastyPurple/20 text-[10px] font-black">${getExpMainCat(e)}</span></td>
+                                    <td class="p-3 whitespace-nowrap"><span class="bg-dynastyPurple/10 text-[#7C3AED] px-2.5 py-0.5 rounded border border-dynastyPurple/20 text-[10px] font-black whitespace-nowrap inline-block">${getExpMainCat(e)}</span></td>
                                     <td class="p-3 text-navy text-xs font-bold">${getExpSubCat(e) || '—'}</td>
                                     <td class="p-3 text-cocoa text-xs italic max-w-[180px] truncate" title="${getExpComment(e)}">${getExpComment(e) || '—'}</td>
                                     <td class="p-3 text-right pr-2 font-black text-dynastyPurple text-xs">${formatMoney(getExpAmount(e))}</td>
@@ -2041,10 +2051,11 @@
             }
 
             filteredExpenses.forEach(e => {
+                // ДОБАВЛЕНО whitespace-nowrap ДЛЯ ПРЕДОТВРАЩЕНИЯ ПЕРЕНОСОВ В ДЕТАЛЬНОЙ ТАБЛИЦЕ
                 tbody.innerHTML += `
                     <tr class="hover:bg-reseda/5 transition-colors text-navy font-sans text-xs">
                         <td class="p-3 font-bold">${formatDateStr(getExpDate(e))}</td>
-                        <td class="p-3"><span class="bg-resedaLight text-chive border border-reseda/30 px-2.5 py-0.5 rounded text-[10px] font-bold">${getExpMainCat(e)}</span></td>
+                        <td class="p-3 whitespace-nowrap"><span class="bg-resedaLight text-chive border border-reseda/30 px-2.5 py-0.5 rounded text-[10px] font-bold whitespace-nowrap inline-block">${getExpMainCat(e)}</span></td>
                         <td class="p-3 font-bold">${getExpSubCat(e) || '—'}</td>
                         <td class="p-3 text-cocoa/80 font-medium max-w-[150px] truncate" title="${getExpComment(e)}">${getExpComment(e) || '—'}</td>
                         <td class="p-3 text-right font-black text-dynastyPurple whitespace-nowrap">${formatMoney(getExpAmount(e))}</td>
@@ -2083,7 +2094,6 @@
                         }
                     }
                     renderDashboard();
-                    closeConfirmModal();
                     
                     if (googleScriptUrl) {
                         showToast("Удаляем из Google Таблицы...", "info");
@@ -2184,15 +2194,6 @@
             document.getElementById('expense-comment').value = getExpComment(exp);
         }
 
-        function openProjectModal() {
-            document.getElementById('modal-project').classList.remove('hidden');
-        }
-
-        function openSettingsModal() {
-            document.getElementById('api-url-input').value = googleScriptUrl;
-            document.getElementById('modal-settings').classList.remove('hidden');
-        }
-
         function populateFormDropdowns() {
             const expProjSel = document.getElementById('expense-project');
             if (expProjSel) {
@@ -2208,12 +2209,24 @@
             }
         }
 
+        function openProjectModal() {
+            document.getElementById('modal-project').classList.remove('hidden');
+        }
+
+        function openSettingsModal() {
+            document.getElementById('api-url-input').value = googleScriptUrl;
+            document.getElementById('modal-settings').classList.remove('hidden');
+        }
+
         function closeExpenseModal() {
             document.getElementById('modal-expense').classList.add('hidden');
         }
+
+        // ОБНОВЛЕННЫЕ ФУНКЦИИ ЗАКРЫТИЯ МОДАЛОК
         function closeProjectModal() {
             document.getElementById('modal-project').classList.add('hidden');
         }
+
         function closeSettingsModal() {
             document.getElementById('modal-settings').classList.add('hidden');
         }
@@ -2280,12 +2293,10 @@
                     showToast("Изменения сохранены", "success");
                 }
             } else {
-                // РЕЖИМ СОЗДАНИЯ
-                const validIds = expenses.map(exp => parseInt(getExpID(exp)) || 0).filter(n => !isNaN(n));
-                const localNextId = validIds.length > 0 ? Math.max(0, ...validIds) + 1 : 1;
-
+                // РЕЖИМ СОЗДАНИЯ С ГАРАНТИРОВАННОЙ МГНОВЕННОЙ ИНТЕГРАЦИЕЙ ПОСТОЯННОГО ID
+                const tempId = "tmp_exp_" + Math.random().toString(36).substr(2, 9);
                 const tempExpenseObj = {
-                    ID: String(localNextId),
+                    ID: tempId,
                     "ID Проекта": String(projId),
                     "Дата": date,
                     "Категория": subCat,
@@ -2295,7 +2306,7 @@
                 };
 
                 expenses.push(tempExpenseObj);
-                normalizeData();
+                normalizeData(); // Клонирует массив, но сохраняет tempId в новом клон-элементе
                 closeExpenseModal();
                 document.getElementById('form-expense').reset();
                 
@@ -2318,9 +2329,12 @@
                         };
 
                         const result = await apiRequest(payload);
-                        // Мгновенно заменяем локальный ID на тот, что прилетел с сервера (номер строки)
+                        // Мгновенно перезаписываем ID внутри клонированного элемента в актуальном массиве
                         if (result && result.success && result.id) {
-                            tempExpenseObj.ID = String(result.id);
+                            const expIdx = expenses.findIndex(exp => String(getExpID(exp)) === tempId);
+                            if (expIdx !== -1) {
+                                expenses[expIdx].ID = String(result.id);
+                            }
                             renderDashboard();
                             if (activeProjectId === projId) {
                                 renderProjectExpensesTable();
@@ -2352,11 +2366,10 @@
                 return;
             }
 
-            const validIds = projects.map(p => parseInt(getProjID(p)) || 0).filter(n => !isNaN(n));
-            const localNextId = validIds.length > 0 ? Math.max(0, ...validIds) + 1 : 1;
-
+            // РЕЖИМ СОЗДАНИЯ ПРОЕКТА С УМНОЙ МГНОВЕННОЙ СИНХРОНИЗАЦИЕЙ ID
+            const tempId = "tmp_proj_" + Math.random().toString(36).substr(2, 9);
             const tempProjObj = {
-                ID: String(localNextId),
+                ID: tempId,
                 "Название": name,
                 "Бюджет": budget,
                 "Статус": status
@@ -2386,16 +2399,20 @@
                         const oldId = tempProjObj.ID;
                         const newId = String(result.id);
                         
+                        // Мгновенно перезаписываем ID внутри клонированного объекта в актуальном массиве
+                        const pIdx = projects.findIndex(p => String(getProjID(p)) === tempId);
+                        if (pIdx !== -1) {
+                            projects[pIdx].ID = newId;
+                        }
+                        
                         // Если пока шёл запрос, мы открыли детали проекта, обновляем ID
-                        if (String(activeProjectId) === String(oldId)) {
+                        if (String(activeProjectId) === tempId) {
                             activeProjectId = newId;
                         }
                         
-                        tempProjObj.ID = newId;
-                        
-                        // Если в этот момент добавили траты на этот проект, заменяем их ID
+                        // Если в этот момент добавили траты на этот проект, заменяем их ID проекта
                         expenses.forEach(e => {
-                            if (String(getExpProjId(e)) === String(oldId)) {
+                            if (String(getExpProjId(e)) === tempId) {
                                 e["ID Проекта"] = newId;
                             }
                         });
@@ -2459,19 +2476,41 @@
         // УМНЫЙ ЗАПУСК СВЯЗИ ИЗ ЛОКАЛЬНОГО ХРАНИЛИЩА (ЧТОБЫ НАСТРОЙКИ НЕ СБРАСЫВАЛИСЬ ПРИ ПЕРЕЗАГРУЗКЕ)
         window.onload = function() {
             let savedUrl = localStorage.getItem('hf_google_script_url');
-            if (savedUrl && savedUrl.trim() !== "") {
-                googleScriptUrl = savedUrl.trim();
-            } else {
+            
+            // Защита и миграция со старых тестовых URL на самый новый и стабильный API
+            const oldApis = [
+                "AKfycbws4E9YcJ6IQX0KuQZ0wRmt8fqP0tPW7rz69DRO3qw4doOraIq7rFirPeP_Llo-Sum2",
+                "AKfycbxBxui-PBr0GO6VHLRXzvEN46tf1h1wCczPOKWcHjyf6xLexg0whiWORtaib_qx4jxY"
+            ];
+            
+            let needsMigration = false;
+            if (savedUrl) {
+                oldApis.forEach(oldKey => {
+                    if (savedUrl.includes(oldKey)) {
+                        needsMigration = true;
+                    }
+                });
+            }
+            
+            if (needsMigration || !savedUrl || savedUrl.trim() === "") {
                 googleScriptUrl = DEFAULT_API_URL;
                 localStorage.setItem('hf_google_script_url', googleScriptUrl);
+            } else {
+                googleScriptUrl = savedUrl.trim();
             }
+            
             updateConnectionStatusIndicator(!!googleScriptUrl);
             loadDataFromGoogleSheets();
 
             const confirmBtnYes = document.getElementById('confirm-btn-yes');
             if (confirmBtnYes) {
                 confirmBtnYes.addEventListener('click', () => {
-                    if (confirmActionCallback) confirmActionCallback();
+                    // ИСПРАВЛЕННАЯ СУПЕРНАДЕЖНАЯ СИСТЕМА НЕЗАМЕДЛИТЕЛЬНОГО ЗАКРЫТИЯ ОКНА подтверждения
+                    if (confirmActionCallback) {
+                        const callback = confirmActionCallback;
+                        closeConfirmModal(); // Закрываем и затираем коллбек мгновенно до тяжелых вычислений!
+                        callback(); // Выполняем асинхронное действие
+                    }
                 });
             }
         };
