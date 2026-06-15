@@ -104,21 +104,8 @@
                 </div>
             </div>
 
-            <!-- Текущий статус соединения -->
-            <div id="connection-status-dot" class="flex items-center space-x-1.5 text-xs text-white font-extrabold bg-dynastyBlack px-4 py-1.5 rounded-full border border-dynastyPurple/30 shadow-[0_4px_12px_rgba(165,148,249,0.15)] transition-all duration-300">
-                <span class="w-2.5 h-2.5 bg-dynastyPurple rounded-full animate-pulse shadow-[0_0_8px_#A594F9] shrink-0"></span>
-                <span id="connection-status-text">Симулятор</span>
-            </div>
-
-            <!-- Кнопки действий -->
+            <!-- Кнопки действий (Шестеренка настроек и точка подключения убраны для чистоты мобильной версии) -->
             <div class="flex items-center space-x-2">
-                <!-- Настройки подключения API -->
-                <button onclick="openSettingsModal()" class="bg-white hover:bg-dynastyBg border border-black/10 text-dynastyBlack p-2.5 rounded-xl transition-all shadow-sm" title="Настройки API Google Таблиц">
-                    <svg class="w-5 h-5 text-cocoa hover:text-dynastyPurple transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31(2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                </button>
                 <button onclick="openProjectModal()" class="bg-white hover:bg-dynastyBg border border-black/10 text-dynastyBlack font-bold text-xs px-3.5 py-2.5 rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
                     <svg class="w-4 h-4 text-dynastyPurple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Новый Объект
@@ -583,7 +570,7 @@
         let projectExpensesSortAsc = false;
         
         // НОВЫЙ АКТУАЛЬНЫЙ АДРЕС API GOOGLE APPS SCRIPT
-        const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbxa00GN2Q8sWYTe0YIa7oI6H2zlTphaZgSeKvcpu8_qw7wf6xsKkeqOGD2z2D6DmOB8/exec";
+        const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycby5Wr2_CQcIsEGPq73tHsomNNlRwGaAhoeAL_tCUfzH_LWbyaY34CXHz9cjEAotgeaG/exec";
         let googleScriptUrl = "";
 
         // ================= СИСТЕМНЫЕ ФУНКЦИИ =================
@@ -808,68 +795,6 @@
             document.getElementById('modal-diagnostics').classList.add('hidden');
         }
 
-        // ВОССТАНОВЛЕННАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ СОРТИРОВКИ ТРАТ
-        function sortExpenses(expensesArray, col, asc) {
-            return expensesArray.sort((a, b) => {
-                let valA, valB;
-                if (col === "date") {
-                    valA = parseSafeDate(getExpDate(a)).getTime();
-                    valB = parseSafeDate(getExpDate(b)).getTime();
-                    if (isNaN(valA)) valA = 0;
-                    if (isNaN(valB)) valB = 0;
-                } else if (col === "amount") {
-                    valA = getExpAmount(a);
-                    valB = getExpAmount(b);
-                } else if (col === "project") {
-                    const projA = projects.find(p => isExpenseLinkedToProject(a, p));
-                    const projB = projects.find(p => isExpenseLinkedToProject(b, p));
-                    valA = projA ? getProjName(projA).toLowerCase() : "";
-                    valB = projB ? getProjName(projB).toLowerCase() : "";
-                } else if (col === "Общая категория") {
-                    valA = getExpMainCat(a).toLowerCase();
-                    valB = getExpMainCat(b).toLowerCase();
-                } else {
-                    valA = String(getFlexValue(a, [col])).toLowerCase();
-                    valB = String(getFlexValue(b, [col])).toLowerCase();
-                }
-                
-                if (valA < valB) return asc ? -1 : 1;
-                if (valA > valB) return asc ? 1 : -1;
-                return 0;
-            });
-        }
-
-        // ВОССТАНОВЛЕННАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ИНДИКАТОРОВ СОРТИРОВКИ
-        function updateSortIndicators() {
-            const colsRecent = ['project', 'date', 'Общая категория', 'amount'];
-            colsRecent.forEach(c => {
-                const el = document.getElementById('sort-recent-' + (c === 'Общая категория' ? 'category' : c));
-                if (el) {
-                    if (recentExpensesSortCol === c) {
-                        el.innerText = recentExpensesSortAsc ? ' ▲' : ' ▼';
-                        el.className = "text-dynastyPurple font-black";
-                    } else {
-                        el.innerText = '';
-                        el.className = "";
-                    }
-                }
-            });
-
-            const colsProj = ['date', 'Общая категория', 'amount'];
-            colsProj.forEach(c => {
-                const el = document.getElementById('sort-project-' + (c === 'Общая категория' ? 'category' : c));
-                if (el) {
-                    if (projectExpensesSortCol === c) {
-                        el.innerText = projectExpensesSortAsc ? ' ▲' : ' ▼';
-                        el.className = "text-dynastyPurple font-black";
-                    } else {
-                        el.innerText = '';
-                        el.className = "";
-                    }
-                }
-            });
-        }
-
         function getFlexValue(obj, possibleKeys) {
             if (!obj) return "";
             for (let key of possibleKeys) {
@@ -905,7 +830,7 @@
         const getExpProjId = (e) => {
             let val = getFlexValue(e, ["ID Проекта", "ID Proj", "projectId", "id проекта", "id proj", "ID_Proj", "ID_Проекта", "Проект", "Объект", "project", "object"]);
             let str = String(val !== null && val !== undefined ? val : "").trim();
-            if (str.endsWith(".0")) str = str.substring(0, str.length - 2); // ИСПРАВЛЕНО: возвращена правильная логика substring вместо SyntaxError unmatched ')'
+            if (str.endsWith(".0")) str = str.substring(0, str.length - 2); 
             return str;
         };
         const getExpAmount = (e) => {
@@ -967,6 +892,69 @@
             return false;
         }
 
+        // ================= ФУНКЦИЯ СОРТИРОВКИ ТРАТ =================
+        function sortExpenses(expensesArray, col, asc) {
+            return expensesArray.sort((a, b) => {
+                let valA, valB;
+                if (col === "date") {
+                    valA = parseSafeDate(getExpDate(a)).getTime();
+                    valB = parseSafeDate(getExpDate(b)).getTime();
+                    if (isNaN(valA)) valA = 0;
+                    if (isNaN(valB)) valB = 0;
+                } else if (col === "amount") {
+                    valA = getExpAmount(a);
+                    valB = getExpAmount(b);
+                } else if (col === "project") {
+                    const projA = projects.find(p => isExpenseLinkedToProject(a, p));
+                    const projB = projects.find(p => isExpenseLinkedToProject(b, p));
+                    valA = projA ? getProjName(projA).toLowerCase() : "";
+                    valB = projB ? getProjName(projB).toLowerCase() : "";
+                } else if (col === "Общая категория") {
+                    valA = getExpMainCat(a).toLowerCase();
+                    valB = getExpMainCat(b).toLowerCase();
+                } else {
+                    valA = String(getFlexValue(a, [col])).toLowerCase();
+                    valB = String(getFlexValue(b, [col])).toLowerCase();
+                }
+                
+                if (valA < valB) return asc ? -1 : 1;
+                if (valA > valB) return asc ? 1 : -1;
+                return 0;
+            });
+        }
+
+        // ================= ФУНКЦИЯ ОБНОВЛЕНИЯ ИНДИКАТОРОВ СОРТИРОВКИ =================
+        function updateSortIndicators() {
+            const colsRecent = ['project', 'date', 'Общая категория', 'amount'];
+            colsRecent.forEach(c => {
+                const el = document.getElementById('sort-recent-' + (c === 'Общая категория' ? 'category' : c));
+                if (el) {
+                    if (recentExpensesSortCol === c) {
+                        el.innerText = recentExpensesSortAsc ? ' ▲' : ' ▼';
+                        el.className = "text-dynastyPurple font-black";
+                    } else {
+                        el.innerText = '';
+                        el.className = "";
+                    }
+                }
+            });
+
+            const colsProj = ['date', 'Общая категория', 'amount'];
+            colsProj.forEach(c => {
+                const el = document.getElementById('sort-project-' + (c === 'Общая категория' ? 'category' : c));
+                if (el) {
+                    if (projectExpensesSortCol === c) {
+                        el.innerText = projectExpensesSortAsc ? ' ▲' : ' ▼';
+                        el.className = "text-dynastyPurple font-black";
+                    } else {
+                        el.innerText = '';
+                        el.className = "";
+                    }
+                }
+            });
+        }
+
+        // ================= ФУНКЦИЯ ФОРМАТИРОВАНИЯ И СВЯЗЫВАНИЯ ДАННЫХ =================
         function normalizeData() {
             if (!Array.isArray(projects)) projects = [];
             if (!Array.isArray(expenses)) expenses = [];
@@ -1068,7 +1056,9 @@
             return await response.json();
         }
 
+        // ================= ФУНКЦИЯ ОБНОВЛЕНИЯ ИНДИКАТОРА СОСТОЯНИЯ СЕТИ (ОСТАВЛЕНА ДЛЯ СОВМЕСТИМОСТИ) =================
         function updateConnectionStatusIndicator(isConnected) {
+            // Данные теперь синхронизируются тихо и бесшумно
             const statusDot = document.getElementById('connection-status-dot');
             if (!statusDot) return;
             
@@ -1152,7 +1142,7 @@
                                     <li>В Google Таблице откройте <b>Расширения -> Apps Script</b>.</li>
                                     <li>Нажмите синюю кнопку <b>Начать развертывание -> Управление развертываниями</b>.</li>
                                     <li>Нажмите на карандашик ✏️.</li>
-                                    <li><span class="text-dynastyPurple font-bold">ВАЖНО:</span> В поле Версия выберите <b>"Новая версия"</b>.</li>
+                                    <li><span class="text-dynastyPurple font-bold">ВАЖНО:</span> В поле  выберите <b>"Новая версия"</b>.</li>
                                     <li><span class="text-dynastyPurple font-bold">ВАЖНО:</span> В поле "У кого есть доступ" выберите <b>"Все"</b> (не "Все с аккаунтом", а просто "Все").</li>
                                     <li>Нажмите <b>Развернуть</b> и вставьте новую ссылку на сайт.</li>
                                 </ol>
@@ -2480,7 +2470,8 @@
             // Защита и миграция со старых тестовых URL на самый новый и стабильный API
             const oldApis = [
                 "AKfycbws4E9YcJ6IQX0KuQZ0wRmt8fqP0tPW7rz69DRO3qw4doOraIq7rFirPeP_Llo-Sum2",
-                "AKfycbxBxui-PBr0GO6VHLRXzvEN46tf1h1wCczPOKWcHjyf6xLexg0whiWORtaib_qx4jxY"
+                "AKfycbxBxui-PBr0GO6VHLRXzvEN46tf1h1wCczPOKWcHjyf6xLexg0whiWORtaib_qx4jxY",
+                "AKfycbxa00GN2Q8sWYTe0YIa7oI6H2zlTphaZgSeKvcpu8_qw7wf6xsKkeqOGD2z2D6DmOB8"
             ];
             
             let needsMigration = false;
