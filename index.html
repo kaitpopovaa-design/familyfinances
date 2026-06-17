@@ -321,10 +321,28 @@
 
     </main>
 
-    <!-- Подвал -->
-    <footer class="glass-panel border-t border-black/5 py-6 px-4 text-center text-xs text-cocoa/80 space-y-1 shadow-inner font-semibold font-sans">
-        <p class="font-semibold">© 2026 Finance. Все права защищены.</p>
-        <p class="text-[10px]">Интерфейс в светлом премиум-дизайне на базе палитры Home Pallet & MIND Violet.</p>
+    <!-- Подвал с вынесенным индикатором и кнопкой настроек -->
+    <footer class="glass-panel border-t border-black/5 py-6 px-4 text-center text-xs text-cocoa/80 shadow-inner font-semibold font-sans">
+        <div class="max-w-xl mx-auto flex flex-col sm:flex-row justify-center items-center gap-3 mb-4">
+            <!-- Текущий статус соединения перенесен в подвал для чистоты мобильной версии -->
+            <div id="connection-status-dot" class="flex items-center space-x-1.5 text-xs text-white font-extrabold bg-dynastyBlack px-3.5 py-1.5 rounded-full border border-dynastyPurple/30 shadow-sm transition-all duration-300">
+                <span class="w-2 h-2 bg-dynastyPurple rounded-full animate-pulse shadow-[0_0_8px_#A594F9] shrink-0"></span>
+                <span id="connection-status-text">Симулятор</span>
+            </div>
+            
+            <!-- Кнопка шестеренки настроек перенесена в подвал -->
+            <button onclick="openSettingsModal()" class="bg-white hover:bg-dynastyBg border border-black/10 text-dynastyBlack px-3.5 py-1.5 rounded-full transition-all shadow-sm flex items-center gap-1.5 text-[11px] font-bold">
+                <svg class="w-3.5 h-3.5 text-cocoa hover:text-dynastyPurple transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31(2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <span>Настройки соединения API</span>
+            </button>
+        </div>
+        <div class="space-y-1">
+            <p class="font-semibold">© 2026 Finance. Все права защищены.</p>
+            <p class="text-[10px]">Интерфейс в светлом премиум-дизайне на базе палитры Home Pallet & MIND Violet.</p>
+        </div>
     </footer>
 
     <!-- ================= МОДАЛЬНЫЕ ОКНА ================= -->
@@ -446,7 +464,8 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Общая категория</label>
-                        <select id="expense-main-category" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm"></select>
+                        <input type="text" id="expense-main-category" list="categories-list" placeholder="Выберите или впишите свою..." autocomplete="off" class="w-full bg-[#F4F4F6] border border-black/10 rounded-xl p-3 focus:outline-none focus:border-dynastyPurple font-medium shadow-sm">
+                        <datalist id="categories-list"></datalist>
                     </div>
                     <div>
                         <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Категория деталей</label>
@@ -532,22 +551,15 @@
 
         const defaultCategories = [
             { ID: "1", "Общая категория": "Фундамент" },
-            { ID: "2", "Общая категория": "Стены" },
-            { ID: "3", "Общая категория": "Крыша" },
-            { ID: "4", "Общая категория": "Электрика" },
-            { ID: "5", "Общая категория": "Сантехника" },
+            { ID: "2", "Общая категория": "Стены и перекрытия" },
+            { ID: "3", "Общая категория": "Кровля" },
+            { ID: "4", "Общая категория": "Окна и двери" },
+            { ID: "5", "Общая категория": "Инженерия (Эл/Сан)" },
             { ID: "6", "Общая категория": "Отделка" },
-            { ID: "7", "Общая категория": "Фасад" },
-            { ID: "8", "Общая категория": "Окна" },
-            { ID: "9", "Общая категория": "Земля" },
-            { ID: "10", "Общая категория": "Работа" },
-            { ID: "11", "Общая категория": "Документы" },
-            { ID: "12", "Общая категория": "Прочее" },
-            { ID: "13", "Общая категория": "Чистовая отделка" },
-            { ID: "14", "Общая категория": "Благоустройство" },
-            { ID: "15", "Общая категория": "Подготовительный этап" },
-            { ID: "16", "Общая категория": "Документация" },
-            { ID: "17", "Общая категория": "Предчистовая отделка" }
+            { ID: "7", "Общая категория": "Участок и земля" },
+            { ID: "8", "Общая категория": "Услуги и Работа" },
+            { ID: "9", "Общая категория": "Документация" },
+            { ID: "10", "Общая категория": "Прочее" }
         ];
 
         let projects = [];
@@ -654,7 +666,7 @@
             }
             const monthsRu = {
                 "янв": 0, "фев": 1, "мар": 2, "апр": 3, "май": 4, "июн": 5,
-                "июл": 6, "авг": 7, "сен": 8, "окт": 9, "ноя": 10, "дек": 11
+                "июл": 6, "вг": 7, "сен": 8, "окт": 9, "ноя": 10, "дек": 11
             };
             let lowerS = s.toLowerCase();
             for (let monthName in monthsRu) {
@@ -853,6 +865,8 @@
             let val = getFlexValue(e, ["Комментарий", "Comment", "comment", "комментарий", "Заметка", "Примечания"]);
             return val ? String(val).trim() : "";
         };
+        
+        // ВОССТАНОВЛЕННАЯ СИСТЕМНАЯ ФУНКЦИЯ ИЗВЛЕЧЕНИЯ ID РАСХОДА
         const getExpID = (e) => {
             let val = getFlexValue(e, ["ID", "id", "Id"]);
             return val ? String(val).trim() : "";
@@ -1056,9 +1070,7 @@
             return await response.json();
         }
 
-        // ================= ФУНКЦИЯ ОБНОВЛЕНИЯ ИНДИКАТОРА СОСТОЯНИЯ СЕТИ (ОСТАВЛЕНА ДЛЯ СОВМЕСТИМОСТИ) =================
         function updateConnectionStatusIndicator(isConnected) {
-            // Данные теперь синхронизируются тихо и бесшумно
             const statusDot = document.getElementById('connection-status-dot');
             if (!statusDot) return;
             
@@ -1089,6 +1101,10 @@
             projects = JSON.parse(localStorage.getItem('hf_projects')) || [];
             expenses = JSON.parse(localStorage.getItem('hf_expenses')) || [];
             categories = JSON.parse(localStorage.getItem('hf_categories')) || [];
+            // Единая подстраховка: если локальные категории пусты, развертываем дефолтные
+            if (categories.length === 0) {
+                categories = [...defaultCategories];
+            }
         }
 
         function saveLocalState() {
@@ -1106,7 +1122,9 @@
                 if (data && data.projects && data.expenses) {
                     projects = data.projects;
                     expenses = data.expenses;
-                    categories = data.categories || defaultCategories;
+                    
+                    // КОРРЕКЦИЯ ОШИБКИ ||: если вкладка Категории пустая ([]) – сайт больше не ломается, а использует резервные категории
+                    categories = (data.categories && data.categories.length > 0) ? data.categories : defaultCategories;
                     
                     normalizeData(); 
                     renderDashboard();
@@ -1127,33 +1145,32 @@
                     throw new TypeError("Получен пустой ответ от таблицы.");
                 }
             } catch (error) {
-                console.warn("СБОЙ ПОДКЛЮЧЕНИЯ:", error);
+                console.warn("СБОЙ ПОДКЛЮЧЕНИЯ (ОТКРЫВАЕМ ОКНО ДИАГНОСТИКИ):", error);
                 
-                if (error.name === 'TypeError') {
-                     let html = `
-                        <div class="space-y-4 font-sans text-xs">
-                            <div class="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200 shadow-sm">
-                                <h4 class="font-black text-sm mb-1 uppercase tracking-wider">🚨 Доступ к таблице заблокирован</h4>
-                                <p class="font-medium">Браузер не смог прочитать данные. Причина: ${error.message}</p>
-                            </div>
-                            <div class="text-xs space-y-2 text-dynastyBlack bg-[#F4F4F6] p-4 rounded-xl border border-black/10">
-                                <p class="font-bold uppercase text-cocoa tracking-wider">Как исправить за 1 минуту:</p>
-                                <ol class="list-decimal pl-4 space-y-2 font-medium">
-                                    <li>В Google Таблице откройте <b>Расширения -> Apps Script</b>.</li>
-                                    <li>Нажмите синюю кнопку <b>Начать развертывание -> Управление развертываниями</b>.</li>
-                                    <li>Нажмите на карандашик ✏️.</li>
-                                    <li><span class="text-dynastyPurple font-bold">ВАЖНО:</span> В поле  выберите <b>"Новая версия"</b>.</li>
-                                    <li><span class="text-dynastyPurple font-bold">ВАЖНО:</span> В поле "У кого есть доступ" выберите <b>"Все"</b> (не "Все с аккаунтом", а просто "Все").</li>
-                                    <li>Нажмите <b>Развернуть</b> и вставьте новую ссылку на сайт.</li>
-                                </ol>
-                            </div>
+                // Улучшено: Любая ошибка соединения теперь открывает подробное окно с инструкцией по Apps Script
+                let html = `
+                    <div class="space-y-4 font-sans text-xs">
+                        <div class="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200 shadow-sm">
+                            <h4 class="font-black text-sm mb-1 uppercase tracking-wider">🚨 Ошибка подключения к Google Таблице</h4>
+                            <p class="font-medium">Причина: ${error.message || error}</p>
                         </div>
-                    `;
-                    const diagBody = document.getElementById('diagnostics-modal-body');
-                    if (diagBody) {
-                        diagBody.innerHTML = html;
-                        document.getElementById('modal-diagnostics').classList.remove('hidden');
-                    }
+                        <div class="text-xs space-y-2 text-dynastyBlack bg-[#F4F4F6] p-4 rounded-xl border border-black/10">
+                            <p class="font-bold uppercase text-cocoa tracking-wider">Как исправить за 1 минуту:</p>
+                            <ol class="list-decimal pl-4 space-y-2 font-medium">
+                                <li>В Google Таблице откройте <b>Расширения -> Apps Script</b>.</li>
+                                <li>Нажмите синюю кнопку <b>Начать развертывание -> Управление развертываниями</b>.</li>
+                                <li>Нажмите на карандашик ✏️.</li>
+                                <li><span class="text-dynastyPurple font-bold">ВАЖНО:</span> В поле Версия выберите <b>"Новая версия"</b> (это критично для применения изменений!).</li>
+                                <li><span class="text-dynastyPurple font-bold">ВАЖНО:</span> В поле "У кого есть доступ" выберите <b>"Все"</b> (Anyone), а не "Только я".</li>
+                                <li>Нажмите <b>Развернуть</b>, скопируйте новую ссылку и вставьте её в настройки подключения.</li>
+                            </ol>
+                        </div>
+                    </div>
+                `;
+                const diagBody = document.getElementById('diagnostics-modal-body');
+                if (diagBody) {
+                    diagBody.innerHTML = html;
+                    document.getElementById('modal-diagnostics').classList.remove('hidden');
                 }
                 
                 disconnectApi();
@@ -1169,7 +1186,7 @@
                 if (data && data.projects && data.expenses) {
                     projects = data.projects;
                     expenses = data.expenses;
-                    categories = data.categories || defaultCategories;
+                    categories = (data.categories && data.categories.length > 0) ? data.categories : defaultCategories;
                     normalizeData();
                     renderDashboard();
                     populateFormDropdowns();
@@ -1753,6 +1770,7 @@
             if (clean.includes("работа") || clean.includes("бригад")) return 'rgba(143, 160, 131, 0.40)'; 
             if (clean.includes("подготовительн")) return 'rgba(147, 197, 253, 0.40)'; 
             if (clean.includes("электрика") || clean.includes("проводка")) return 'rgba(124, 58, 237, 0.40)';  
+            if (clean.includes("коммуникации") || clean.includes("инженерия")) return 'rgba(56, 189, 248, 0.40)'; // Премиальный бирюзово-голубой для инженерных сетей
             if (clean.includes("отделка")) return 'rgba(203, 213, 225, 0.40)'; 
             return 'rgba(148, 163, 184, 0.40)';
         }
@@ -2084,6 +2102,7 @@
                         }
                     }
                     renderDashboard();
+                    closeConfirmModal();
                     
                     if (googleScriptUrl) {
                         showToast("Удаляем из Google Таблицы...", "info");
@@ -2173,12 +2192,7 @@
             
             document.getElementById('expense-amount').value = getExpAmount(exp);
             
-            let catSelect = document.getElementById('expense-main-category');
-            let mainCat = getExpMainCat(exp);
-            if (![...catSelect.options].map(o => o.value).includes(mainCat)) {
-                 catSelect.innerHTML += `<option value="${mainCat}">${mainCat}</option>`;
-            }
-            catSelect.value = mainCat;
+            document.getElementById('expense-main-category').value = getExpMainCat(exp);
             
             document.getElementById('expense-sub-category').value = getExpSubCat(exp);
             document.getElementById('expense-comment').value = getExpComment(exp);
@@ -2190,12 +2204,21 @@
                 expProjSel.innerHTML = projects.map(p => `<option value="${getProjID(p)}">${getProjName(p)}</option>`).join('');
             }
 
-            const expCatSel = document.getElementById('expense-main-category');
-            if (expCatSel) {
-                expCatSel.innerHTML = categories.map(c => {
-                    const catName = getFlexValue(c, ["Общая категория", "Общая category", "Category", "category", "Name", "name", "Группа"]);
-                    return `<option value="${catName}">${catName}</option>`;
-                }).join('');
+            const expCatList = document.getElementById('categories-list');
+            if (expCatList) {
+                // 1. Собираем категории из загруженного списка (Google Таблица)
+                const definedCats = categories.map(c => getFlexValue(c, ["Общая категория", "Общая category", "Category", "category", "Name", "name", "Группа"])).filter(Boolean);
+                
+                // 2. Собираем дефолтный список
+                const fallbackCats = defaultCategories.map(c => c["Общая категория"]);
+                
+                // 3. Собираем уникальные категории, которые УЖЕ вписаны в расходы в таблице
+                const uniqueCatsInExpenses = expenses.map(e => getExpMainCat(e)).filter(Boolean);
+                
+                // Сливаем все списки воедино, исключая дубликаты!
+                const allCats = [...new Set([...definedCats, ...fallbackCats, ...uniqueCatsInExpenses])];
+                
+                expCatList.innerHTML = allCats.map(catName => `<option value="${catName}"></option>`).join('');
             }
         }
 
@@ -2443,26 +2466,6 @@
             }
         }
 
-        function toggleRecentExpensesSort(col) {
-            if (recentExpensesSortCol === col) {
-                recentExpensesSortAsc = !recentExpensesSortAsc;
-            } else {
-                recentExpensesSortCol = col;
-                recentExpensesSortAsc = true;
-            }
-            renderDashboard();
-        }
-
-        function toggleProjectExpensesSort(col) {
-            if (projectExpensesSortCol === col) {
-                projectExpensesSortAsc = !projectExpensesSortAsc;
-            } else {
-                projectExpensesSortCol = col;
-                projectExpensesSortAsc = true;
-            }
-            renderProjectExpensesTable();
-        }
-
         // УМНЫЙ ЗАПУСК СВЯЗИ ИЗ ЛОКАЛЬНОГО ХРАНИЛИЩА (ЧТОБЫ НАСТРОЙКИ НЕ СБРАСЫВАЛИСЬ ПРИ ПЕРЕЗАГРУЗКЕ)
         window.onload = function() {
             let savedUrl = localStorage.getItem('hf_google_script_url');
@@ -2471,7 +2474,9 @@
             const oldApis = [
                 "AKfycbws4E9YcJ6IQX0KuQZ0wRmt8fqP0tPW7rz69DRO3qw4doOraIq7rFirPeP_Llo-Sum2",
                 "AKfycbxBxui-PBr0GO6VHLRXzvEN46tf1h1wCczPOKWcHjyf6xLexg0whiWORtaib_qx4jxY",
-                "AKfycbxa00GN2Q8sWYTe0YIa7oI6H2zlTphaZgSeKvcpu8_qw7wf6xsKkeqOGD2z2D6DmOB8"
+                "AKfycbxa00GN2Q8sWYTe0YIa7oI6H2zlTphaZgSeKvcpu8_qw7wf6xsKkeqOGD2z2D6DmOB8",
+                "AKfycbxa00GN2Q8sWYTe0YIa7oI6H2zlTphaZgSeKvcpu8_qw7wf6xsKkeqOGD2z2D6DmOB8",
+                "AKfycby5Wr2_CQcIsEGPq73tHsomNNlRwGaAhoeAL_tCUfzH_LWbyaY34CXHz9cjEAotgeaG"
             ];
             
             let needsMigration = false;
