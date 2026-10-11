@@ -317,6 +317,27 @@
         }
         .family-flow-group-btn:hover { color: #0B0B0E; border-color: rgba(11,11,14,.16); }
         .family-flow-group-btn.is-active { background: #0B0B0E; color: white; border-color: #0B0B0E; }
+        .family-person-btn {
+            min-height: 38px;
+            padding: 8px 13px;
+            border-radius: 999px;
+            border: 1px solid rgba(11,11,14,.09);
+            background: white;
+            color: #7A6E67;
+            font-size: 11px;
+            font-weight: 800;
+            transition: all .18s ease;
+            white-space: nowrap;
+        }
+        .family-person-btn:hover { color: #0B0B0E; border-color: rgba(11,11,14,.18); }
+        .family-person-btn.is-active { background: #0B0B0E; color: white; border-color: #0B0B0E; }
+        .family-person-stat {
+            border-radius: 16px;
+            border: 1px solid rgba(11,11,14,.06);
+            background: #F4F4F6;
+            padding: 12px 14px;
+            min-width: 0;
+        }
         .family-custom-period {
             display: grid;
             grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto;
@@ -796,6 +817,36 @@
                 </div>
             </div>
 
+            <div class="glass-panel rounded-2xl p-4 sm:p-5">
+                <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                    <div class="min-w-0">
+                        <h3 class="text-xs font-black uppercase tracking-wider text-dynastyBlack">Разделение семейных трат</h3>
+                        <p class="text-[10px] text-cocoa font-semibold mt-1">Пометка «Катя / Коля» нужна только для личной аналитики. По умолчанию всё считается общим семейным бюджетом.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2" aria-label="Фильтр по человеку">
+                        <button id="family-person-btn-all" type="button" onclick="setFamilyExpensePersonFilter('')" class="family-person-btn is-active">Все</button>
+                        <button id="family-person-btn-katya" type="button" onclick="setFamilyExpensePersonFilter('Катя')" class="family-person-btn">Катя</button>
+                        <button id="family-person-btn-kolya" type="button" onclick="setFamilyExpensePersonFilter('Коля')" class="family-person-btn">Коля</button>
+                        <button id="family-person-btn-common" type="button" onclick="setFamilyExpensePersonFilter('Общее')" class="family-person-btn">Общее</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
+                    <button type="button" onclick="setFamilyExpensePersonFilter('Катя')" class="family-person-stat text-left hover:border-dynastyPurple/30 transition-all">
+                        <p class="text-[9px] uppercase tracking-wider font-extrabold text-cocoa">Личные · Катя</p>
+                        <p id="family-person-katya-total" class="text-lg font-black text-dynastyPurple mt-1">0 ₽</p>
+                    </button>
+                    <button type="button" onclick="setFamilyExpensePersonFilter('Коля')" class="family-person-stat text-left hover:border-dynastyPurple/30 transition-all">
+                        <p class="text-[9px] uppercase tracking-wider font-extrabold text-cocoa">Личные · Коля</p>
+                        <p id="family-person-kolya-total" class="text-lg font-black text-dynastyBlack mt-1">0 ₽</p>
+                    </button>
+                    <button type="button" onclick="setFamilyExpensePersonFilter('Общее')" class="family-person-stat text-left hover:border-dynastyPurple/30 transition-all">
+                        <p class="text-[9px] uppercase tracking-wider font-extrabold text-cocoa">Общие траты</p>
+                        <p id="family-person-common-total" class="text-lg font-black text-dynastyBlack mt-1">0 ₽</p>
+                    </button>
+                </div>
+                <p id="family-person-summary-note" class="text-[9px] text-cocoa/70 font-semibold mt-2">Личное распределение считается только для DETAIL-операций, где есть пометка «Катя / Коля / Общее».</p>
+            </div>
+
             <div id="family-data-coverage-note" class="hidden rounded-2xl border px-4 py-3 text-xs font-bold leading-relaxed"></div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -881,11 +932,12 @@
                 <div class="family-table-scroll overflow-x-auto rounded-xl border border-black/5 max-h-[520px] overflow-y-auto">
                     <table class="w-full min-w-[940px] table-fixed text-center text-xs sm:text-sm">
                         <colgroup>
-                            <col class="w-[11%]">
-                            <col class="w-[27%]">
-                            <col class="w-[17%]">
-                            <col class="w-[16%]">
-                            <col class="w-[14%]">
+                            <col class="w-[10%]">
+                            <col class="w-[24%]">
+                            <col class="w-[15%]">
+                            <col class="w-[13%]">
+                            <col class="w-[13%]">
+                            <col class="w-[10%]">
                             <col class="w-[10%]">
                             <col class="w-[5%]">
                         </colgroup>
@@ -896,6 +948,7 @@
                                 <th class="p-3">Категория</th>
                                 <th class="p-3">Тип</th>
                                 <th class="p-3">Источник</th>
+                                <th class="p-3">Для кого</th>
                                 <th class="p-3">Сумма</th>
                                 <th class="p-3"></th>
                             </tr>
@@ -1020,6 +1073,22 @@
                 </div>
 
                 <div>
+                    <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Для кого</label>
+                    <div class="custom-select-shell">
+                        <select id="family-op-person" class="custom-select-native" tabindex="-1" aria-hidden="true">
+                            <option value="Общее">Общее</option>
+                            <option value="Катя">Катя</option>
+                            <option value="Коля">Коля</option>
+                        </select>
+                        <button type="button" id="family-op-person-trigger" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false" onclick="toggleCustomSelect('family-op-person', event)">
+                            <span id="family-op-person-display">Общее</span>
+                            <span class="custom-select-chevron">⌄</span>
+                        </button>
+                        <div id="family-op-person-panel" class="custom-select-panel scrollbar-hidden hidden" role="listbox"></div>
+                    </div>
+                    <p class="text-[9px] text-cocoa/70 font-semibold mt-1">Отмечай только явно личные траты. Остальное оставляй «Общее».</p>
+                </div>
+                <div>
                     <label class="block text-cocoa mb-1 font-bold uppercase tracking-wider text-[10px]">Комментарий</label>
                     <textarea id="family-op-comment" rows="2" class="family-input resize-none" placeholder="Необязательно"></textarea>
                 </div>
@@ -1074,6 +1143,7 @@
                             <th class="p-2 text-center">Категория</th>
                             <th class="p-2 text-center">Тип</th>
                             <th class="p-2 text-center">Источник</th>
+                            <th class="p-2 text-center">Для кого</th>
                             <th class="p-2 text-right">Сумма</th>
                         </tr>
                     </thead>
@@ -3357,7 +3427,7 @@
         }
 
         function closeCustomSelects(exceptId = null) {
-            ['expense-project', 'project-create-status', 'family-op-category', 'family-op-subcategory', 'family-op-type', 'family-op-source'].forEach(id => {
+            ['expense-project', 'project-create-status', 'family-op-category', 'family-op-subcategory', 'family-op-type', 'family-op-source', 'family-op-person'].forEach(id => {
                 if (id === exceptId) return;
                 const cfg = getCustomSelectConfig(id);
                 if (!cfg) return;
@@ -3886,6 +3956,7 @@
         let familyCustomPeriodStart = '';
         let familyCustomPeriodEnd = '';
         let familyFlowGrouping = 'month';
+        let familyExpensePersonFilter = '';
         let familyExpenseData = {
             summary: {},
             previousSummary: {},
@@ -3896,7 +3967,9 @@
             partialSummaryMonths: [],
             categories: [],
             categoryTotals: [],
-            allowedTypes: []
+            allowedTypes: [],
+            allowedPersons: ['Общее','Катя','Коля'],
+            personTotals: { 'Общее': 0, 'Катя': 0, 'Коля': 0 }
         };
         let familyCategoryChartInstance = null;
         let familyFlowChartInstance = null;
@@ -4191,6 +4264,36 @@
             setFamilyExpensePeriodCurrent();
         }
 
+        function setFamilyExpensePersonFilter(person) {
+            const normalized = ['Катя','Коля','Общее'].includes(String(person || '')) ? String(person) : '';
+            if (familyExpensePersonFilter === normalized) return;
+            familyExpensePersonFilter = normalized;
+            updateFamilyPersonControls();
+            loadFamilyExpenseDashboard();
+        }
+
+        function updateFamilyPersonControls() {
+            const map = { all: '', katya: 'Катя', kolya: 'Коля', common: 'Общее' };
+            Object.entries(map).forEach(([id, value]) => {
+                document.getElementById(`family-person-btn-${id}`)?.classList.toggle('is-active', familyExpensePersonFilter === value);
+            });
+        }
+
+        function renderFamilyPersonTotals() {
+            const totals = familyExpenseData.personTotals || {};
+            setText('family-person-katya-total', formatMoney(Number(totals['Катя']) || 0));
+            setText('family-person-kolya-total', formatMoney(Number(totals['Коля']) || 0));
+            setText('family-person-common-total', formatMoney(Number(totals['Общее']) || 0));
+            updateFamilyPersonControls();
+            const note = document.getElementById('family-person-summary-note');
+            if (note) {
+                const hasSummary = (familyExpenseData.monthStates || []).some(x => x.mode === 'SUMMARY');
+                note.textContent = hasSummary
+                    ? 'Личное распределение считается только по DETAIL-операциям. Исторические SUMMARY-месяцы нельзя честно разделить между Катей и Колей.'
+                    : 'Личное распределение считается по пометке «Катя / Коля / Общее» в DETAIL-операциях.';
+            }
+        }
+
         async function loadFamilyExpenseDashboard() {
             if (!googleScriptUrl) {
                 showToast('Для семейных расходов нужно подключение к Google Таблице.', 'error');
@@ -4209,7 +4312,8 @@
                     startDate: range.startDate,
                     endDate: range.endDate,
                     previousStartDate: previousRange.startDate,
-                    previousEndDate: previousRange.endDate
+                    previousEndDate: previousRange.endDate,
+                    person: familyExpensePersonFilter
                 });
                 familyExpenseData = {
                     summary: data.summary || {},
@@ -4222,6 +4326,9 @@
                     categories: data.categories || [],
                     categoryTotals: data.categoryTotals || [],
                     allowedTypes: data.allowedTypes || [],
+                    allowedPersons: data.allowedPersons || ['Общее','Катя','Коля'],
+                    personTotals: data.personTotals || { 'Общее': 0, 'Катя': 0, 'Коля': 0 },
+                    selectedPerson: data.selectedPerson || familyExpensePersonFilter,
                     currentRange: range,
                     previousRange: previousRange
                 };
@@ -4246,6 +4353,7 @@
                 else cash.classList.add((Number(s.cashFlow) || 0) > 0 ? 'text-dynastyLime' : ((Number(s.cashFlow) || 0) < 0 ? 'text-red-400' : 'text-white'));
             }
 
+            renderFamilyPersonTotals();
             renderFamilyCoverageNote();
             renderFamilyComparison();
             renderFamilyCategoryBreakdown();
@@ -4544,7 +4652,7 @@
                 if (type && String(op.OperationType || '') !== type) return false;
                 if (source && String(op.Source || '') !== source) return false;
                 if (q) {
-                    const hay = [op.Description, op.Category, op.Subcategory, op.Source, op.Comment, op.OperationType].join(' ').toLowerCase();
+                    const hay = [op.Description, op.Category, op.Subcategory, op.Source, op.Person, op.Comment, op.OperationType].join(' ').toLowerCase();
                     if (!hay.includes(q)) return false;
                 }
                 return true;
@@ -4573,7 +4681,7 @@
                 const message = summaryRows.length
                     ? 'Для выбранных исторических данных нет отдельных банковских операций — доступна только месячная SUMMARY-сводка выше.'
                     : 'Нет операций по выбранным фильтрам.';
-                tbody.innerHTML = `<tr><td colspan="7" class="py-10 text-center text-cocoa font-semibold">${message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-cocoa font-semibold">${message}</td></tr>`;
                 return;
             }
 
@@ -4589,6 +4697,7 @@
                     <td class="p-3"><span class="inline-flex px-2.5 py-1 rounded-lg bg-dynastyPurple/10 text-dynastyPurple text-[10px] font-extrabold">${escapeHtmlFamily(category || '—')}</span></td>
                     <td class="p-3 font-bold text-[11px]">${escapeHtmlFamily(op.OperationType || '—')}</td>
                     <td class="p-3 font-bold text-cocoa text-[11px]">${escapeHtmlFamily(op.Source || '—')}</td>
+                    <td class="p-3 font-extrabold text-[11px]">${escapeHtmlFamily(op.Person || 'Общее')}</td>
                     <td class="p-3 font-black ${amount.cls} whitespace-nowrap">${amount.text}</td>
                     <td class="p-3">
                         <button onclick="openFamilyOperationModal('${escapeJsFamily(op.ID)}')" class="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-dynastyPurple/10 text-cocoa hover:text-dynastyPurple transition-all" title="Открыть">
@@ -4663,11 +4772,13 @@
             const categorySelect = document.getElementById('family-op-category');
             const typeSelect = document.getElementById('family-op-type');
             const sourceSelect = document.getElementById('family-op-source');
-            if (!categorySelect || !typeSelect || !sourceSelect) return;
+            const personSelect = document.getElementById('family-op-person');
+            if (!categorySelect || !typeSelect || !sourceSelect || !personSelect) return;
 
             const currentCat = categorySelect.value;
             const currentType = typeSelect.value || 'Расход';
             const currentSource = sourceSelect.value || 'Общая карта';
+            const currentPerson = personSelect.value || 'Общее';
 
             const categories = [...new Set((familyExpenseData.categories || []).map(c => String(c.Category || '').trim()).filter(Boolean))];
             categorySelect.innerHTML = categories.map(c => `<option value="${escapeAttrFamily(c)}">${escapeHtmlFamily(c)}</option>`).join('');
@@ -4680,8 +4791,12 @@
             sourceSelect.innerHTML = sources.map(s => `<option value="${escapeAttrFamily(s)}">${escapeHtmlFamily(s)}</option>`).join('');
             sourceSelect.value = sources.includes(currentSource) ? currentSource : 'Общая карта';
 
+            const persons = familyExpenseData.allowedPersons?.length ? familyExpenseData.allowedPersons : ['Общее','Катя','Коля'];
+            personSelect.innerHTML = persons.map(p => `<option value="${escapeAttrFamily(p)}">${escapeHtmlFamily(p)}</option>`).join('');
+            personSelect.value = persons.includes(currentPerson) ? currentPerson : 'Общее';
+
             onFamilyCategoryChanged(false);
-            ['family-op-category','family-op-type','family-op-source'].forEach(syncCustomSelect);
+            ['family-op-category','family-op-type','family-op-source','family-op-person'].forEach(syncCustomSelect);
         }
 
         function onFamilyCategoryChanged(sync = true) {
@@ -4730,12 +4845,16 @@
                 if (type && [...type.options].some(o => o.value === String(op.OperationType || ''))) type.value = String(op.OperationType || '');
                 const source = document.getElementById('family-op-source');
                 if (source && [...source.options].some(o => o.value === String(op.Source || ''))) source.value = String(op.Source || '');
+                const person = document.getElementById('family-op-person');
+                const personValue = String(op.Person || 'Общее');
+                if (person && [...person.options].some(o => o.value === personValue)) person.value = personValue;
             } else {
                 const type = document.getElementById('family-op-type'); if (type) type.value = 'Расход';
                 const source = document.getElementById('family-op-source'); if (source) source.value = 'Общая карта';
+                const person = document.getElementById('family-op-person'); if (person) person.value = 'Общее';
             }
 
-            ['family-op-category','family-op-subcategory','family-op-type','family-op-source'].forEach(syncCustomSelect);
+            ['family-op-category','family-op-subcategory','family-op-type','family-op-source','family-op-person'].forEach(syncCustomSelect);
             document.getElementById('family-operation-modal')?.classList.remove('hidden');
         }
 
@@ -4757,6 +4876,7 @@
                 subcategory: document.getElementById('family-op-subcategory').value,
                 operationType: document.getElementById('family-op-type').value,
                 source: document.getElementById('family-op-source').value,
+                person: document.getElementById('family-op-person').value || 'Общее',
                 comment: document.getElementById('family-op-comment').value.trim()
             };
 
@@ -4984,7 +5104,11 @@
         }
 
         function familyImportTemplateHeaders() {
-            return ['Date','Amount','Description','Category','Subcategory','OperationType','Source','Comment','SourceOperationId','Occurrence'];
+            return ['Date','Amount','Description','Category','Subcategory','OperationType','Source','Person','Comment','SourceOperationId','Occurrence'];
+        }
+
+        function familyImportRequiredHeaders() {
+            return ['Date','Amount','Description','Category','Subcategory','OperationType','Source','Comment'];
         }
 
         async function handleFamilyExpenseFile(event) {
@@ -4997,10 +5121,11 @@
 
                 const headers = table[0].map(h => String(h).trim());
                 const expected = familyImportTemplateHeaders();
-                const missing = expected.filter(h => !headers.includes(h));
+                const required = familyImportRequiredHeaders();
+                const missing = required.filter(h => !headers.includes(h));
                 const extra = headers.filter(h => !expected.includes(h));
                 if (missing.length || extra.length) {
-                    let msg = 'Структура файла не совпадает с закреплённым форматом.';
+                    let msg = 'Структура файла не совпадает с поддерживаемым форматом.';
                     if (missing.length) msg += ` Не хватает: ${missing.join(', ')}.`;
                     if (extra.length) msg += ` Лишние колонки: ${extra.join(', ')}.`;
                     throw new Error(msg);
@@ -5047,6 +5172,7 @@
             const conflicts = preview.conflictMonths || [];
             const messages = [];
             if (preview.fileAlreadyImported) messages.push('Этот файл уже импортировался раньше. Повторные операции будут распознаны как дубли.');
+            if ((preview.newCategories || []).length) messages.push(`Новые категории будут добавлены в справочник без переименования: ${preview.newCategories.join(', ')}.`);
             if (preview.errors > 0) messages.push('Есть строки с ошибками. Импорт заблокирован до исправления файла.');
             if (conflicts.length) messages.push(`За ${conflicts.map(x => familyMonthCompactLabel(x.month)).join(', ')} уже есть историческая SUMMARY-сводка. DETAIL нельзя добавить поверх неё.`);
             if (warning) {
@@ -5079,6 +5205,7 @@
                         <td class="p-2 text-center">${escapeHtmlFamily(op.Category || '—')}</td>
                         <td class="p-2 text-center">${escapeHtmlFamily(op.OperationType || '—')}</td>
                         <td class="p-2 text-center">${escapeHtmlFamily(op.Source || '—')}</td>
+                        <td class="p-2 text-center font-extrabold">${escapeHtmlFamily(op.Person || 'Общее')}</td>
                         <td class="p-2 text-right font-black whitespace-nowrap">${formatMoney(Number(op.Amount) || 0)}</td>
                     </tr>`;
                 }).join('');
@@ -5196,7 +5323,7 @@
         function downloadFamilyImportTemplate() {
             const headers = familyImportTemplateHeaders();
             const sample = [
-                '2026-08-01','1250.50','Пример операции','Продукты','','Расход','Общая карта','','','1'
+                '2026-08-01','1250.50','Пример операции','Продукты','','Расход','Общая карта','Общее','','','1'
             ];
             const csv = headers.join(',') + '\n' + sample.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
             const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
