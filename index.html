@@ -783,6 +783,7 @@
                             <button onclick="shiftFamilyExpensePeriod(-1)" class="w-10 h-10 rounded-xl bg-white/8 border border-white/10 hover:bg-white/12 transition-all flex items-center justify-center" aria-label="Предыдущий период">←</button>
                             <button onclick="setFamilyExpensePeriodCurrent()" class="px-4 h-10 rounded-xl bg-white/8 border border-white/10 hover:bg-white/12 transition-all text-xs font-extrabold">Текущий период</button>
                             <button onclick="shiftFamilyExpensePeriod(1)" class="w-10 h-10 rounded-xl bg-white/8 border border-white/10 hover:bg-white/12 transition-all flex items-center justify-center" aria-label="Следующий период">→</button>
+                            <button type="button" onclick="refreshFamilyExpenseDashboard()" title="Перечитать данные Google Таблицы" class="h-10 px-3 rounded-xl bg-white/8 border border-white/10 hover:bg-white/12 text-xs font-bold">↻ Обновить</button>
                         </div>
                         <div id="family-custom-period" class="family-custom-period hidden mt-3">
                             <label class="min-w-0">
@@ -794,6 +795,7 @@
                                 <input id="family-custom-end" type="date">
                             </label>
                             <button type="button" onclick="applyFamilyCustomPeriod()" class="h-10 px-4 rounded-xl bg-dynastyPurple hover:bg-dynastyPurpleHover text-white text-xs font-extrabold transition-all">Показать</button>
+                            <button type="button" onclick="refreshFamilyExpenseDashboard()" class="h-10 px-3 rounded-xl bg-white/8 border border-white/10 text-xs font-bold">↻ Обновить</button>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 w-full lg:w-auto lg:min-w-[720px]">
@@ -817,36 +819,6 @@
                 </div>
             </div>
 
-            <div class="glass-panel rounded-2xl p-4 sm:p-5">
-                <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-                    <div class="min-w-0">
-                        <h3 class="text-xs font-black uppercase tracking-wider text-dynastyBlack">Разделение семейных трат</h3>
-                        <p class="text-[10px] text-cocoa font-semibold mt-1">Пометка «Катя / Коля» нужна только для личной аналитики. По умолчанию всё считается общим семейным бюджетом.</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2" aria-label="Фильтр по человеку">
-                        <button id="family-person-btn-all" type="button" onclick="setFamilyExpensePersonFilter('')" class="family-person-btn is-active">Все</button>
-                        <button id="family-person-btn-katya" type="button" onclick="setFamilyExpensePersonFilter('Катя')" class="family-person-btn">Катя</button>
-                        <button id="family-person-btn-kolya" type="button" onclick="setFamilyExpensePersonFilter('Коля')" class="family-person-btn">Коля</button>
-                        <button id="family-person-btn-common" type="button" onclick="setFamilyExpensePersonFilter('Общее')" class="family-person-btn">Общее</button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
-                    <button type="button" onclick="setFamilyExpensePersonFilter('Катя')" class="family-person-stat text-left hover:border-dynastyPurple/30 transition-all">
-                        <p class="text-[9px] uppercase tracking-wider font-extrabold text-cocoa">Личные · Катя</p>
-                        <p id="family-person-katya-total" class="text-lg font-black text-dynastyPurple mt-1">0 ₽</p>
-                    </button>
-                    <button type="button" onclick="setFamilyExpensePersonFilter('Коля')" class="family-person-stat text-left hover:border-dynastyPurple/30 transition-all">
-                        <p class="text-[9px] uppercase tracking-wider font-extrabold text-cocoa">Личные · Коля</p>
-                        <p id="family-person-kolya-total" class="text-lg font-black text-dynastyBlack mt-1">0 ₽</p>
-                    </button>
-                    <button type="button" onclick="setFamilyExpensePersonFilter('Общее')" class="family-person-stat text-left hover:border-dynastyPurple/30 transition-all">
-                        <p class="text-[9px] uppercase tracking-wider font-extrabold text-cocoa">Общие траты</p>
-                        <p id="family-person-common-total" class="text-lg font-black text-dynastyBlack mt-1">0 ₽</p>
-                    </button>
-                </div>
-                <p id="family-person-summary-note" class="text-[9px] text-cocoa/70 font-semibold mt-2">Личное распределение считается только для DETAIL-операций, где есть пометка «Катя / Коля / Общее».</p>
-            </div>
-
             <div id="family-data-coverage-note" class="hidden rounded-2xl border px-4 py-3 text-xs font-bold leading-relaxed"></div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -864,6 +836,7 @@
                         </div>
                         <div id="family-category-list" class="max-h-56 overflow-y-auto scrollbar-hidden pr-1"></div>
                     </div>
+                    <div id="family-category-details" class="hidden mt-4 border-t border-black/10 pt-4"></div>
                 </div>
 
                 <div class="glass-panel rounded-2xl p-5 sm:p-6 lg:col-span-5 flex flex-col">
@@ -897,18 +870,56 @@
 
             <div class="glass-panel rounded-2xl p-5 sm:p-6">
                 <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
-                    <div>
-                        <h3 class="text-sm font-black uppercase tracking-wider text-dynastyBlack">Доходы и расходы во времени</h3>
-                        <p id="family-flow-chart-subtitle" class="text-[11px] text-cocoa font-semibold mt-1">Динамика за выбранный период по месяцам</p>
+                    <div class="min-w-0">
+                        <h3 class="text-sm font-black uppercase tracking-wider text-dynastyBlack">Аналитика трат</h3>
+                        <p id="family-flow-chart-subtitle" class="text-[11px] text-cocoa font-semibold mt-1">Динамика доходов и расходов за выбранный период</p>
+                        <p id="family-active-person-indicator" class="hidden text-[10px] font-extrabold text-dynastyPurple mt-2"></p>
                     </div>
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap gap-1.5" role="group" aria-label="Вид аналитики">
+                        <button id="family-chart-view-flow" type="button" onclick="setFamilyChartView('flow')" aria-pressed="true" class="family-flow-group-btn is-active">Динамика</button>
+                        <button id="family-chart-view-people" type="button" onclick="setFamilyChartView('people')" aria-pressed="false" class="family-flow-group-btn">Кто сколько потратил</button>
+                    </div>
+                </div>
+                <div id="family-flow-view">
+                    <div class="flex flex-wrap gap-2 justify-end mb-4" role="group" aria-label="Группировка графика">
                         <button id="family-flow-btn-month" type="button" onclick="setFamilyFlowGrouping('month')" class="family-flow-group-btn is-active">По месяцам</button>
                         <button id="family-flow-btn-quarter" type="button" onclick="setFamilyFlowGrouping('quarter')" class="family-flow-group-btn">По кварталам</button>
                         <button id="family-flow-btn-year" type="button" onclick="setFamilyFlowGrouping('year')" class="family-flow-group-btn">По годам</button>
                     </div>
+                    <div class="relative w-full h-[280px] sm:h-[330px]">
+                        <canvas id="family-flow-chart" aria-label="График доходов и расходов по периодам"></canvas>
+                    </div>
+                    <p class="text-[10px] text-cocoa mt-2 font-semibold">Нажми на столбец, чтобы увидеть категории и операции. При наведении показываются основные статьи расходов.</p>
+                    <div id="family-flow-drilldown" class="hidden mt-4 border-t border-black/10 pt-4"></div>
                 </div>
-                <div class="relative w-full h-[280px] sm:h-[330px]">
-                    <canvas id="family-flow-chart"></canvas>
+                <div id="family-people-view" class="hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between gap-3 items-start sm:items-center mb-4">
+                        <p class="text-[11px] text-cocoa font-semibold">Личные и общие расходы DETAIL за выбранный период. Выбери человека, чтобы посмотреть его категории и операции.</p>
+                        <div class="flex flex-wrap gap-1.5" role="group" aria-label="Фильтр расходов по человеку">
+                            <button id="family-person-btn-all" type="button" onclick="setFamilyExpensePersonFilter('')" class="family-person-btn is-active" aria-pressed="true">Все</button>
+                            <button id="family-person-btn-katya" type="button" onclick="setFamilyExpensePersonFilter('Катя')" class="family-person-btn" aria-pressed="false">Катя</button>
+                            <button id="family-person-btn-kolya" type="button" onclick="setFamilyExpensePersonFilter('Коля')" class="family-person-btn" aria-pressed="false">Коля</button>
+                            <button id="family-person-btn-common" type="button" onclick="setFamilyExpensePersonFilter('Общее')" class="family-person-btn" aria-pressed="false">Общее</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3" aria-label="Расходы по людям">
+                        <button type="button" onclick="setFamilyExpensePersonFilter('Катя')" class="family-person-stat text-left hover:border-dynastyPurple/30 transition-all" aria-label="Показать расходы Кати">
+                            <p class="text-[10px] font-extrabold text-cocoa">Катя · личные</p>
+                            <p id="family-person-katya-total" class="text-xl font-black text-dynastyPurple mt-2">0 ₽</p>
+                            <div class="h-2 bg-black/5 rounded-full overflow-hidden mt-3"><span id="family-person-katya-bar" class="block h-full bg-dynastyPurple rounded-full transition-all" style="width:0%"></span></div>
+                        </button>
+                        <button type="button" onclick="setFamilyExpensePersonFilter('Коля')" class="family-person-stat text-left hover:border-dynastyPurple/30 transition-all" aria-label="Показать расходы Коли">
+                            <p class="text-[10px] font-extrabold text-cocoa">Коля · личные</p>
+                            <p id="family-person-kolya-total" class="text-xl font-black text-dynastyBlack mt-2">0 ₽</p>
+                            <div class="h-2 bg-black/5 rounded-full overflow-hidden mt-3"><span id="family-person-kolya-bar" class="block h-full bg-dynastyBlack rounded-full transition-all" style="width:0%"></span></div>
+                        </button>
+                        <button type="button" onclick="setFamilyExpensePersonFilter('Общее')" class="family-person-stat text-left hover:border-dynastyPurple/30 transition-all" aria-label="Показать общие расходы">
+                            <p class="text-[10px] font-extrabold text-cocoa">Общие траты</p>
+                            <p id="family-person-common-total" class="text-xl font-black text-dynastyBlack mt-2">0 ₽</p>
+                            <div class="h-2 bg-black/5 rounded-full overflow-hidden mt-3"><span id="family-person-common-bar" class="block h-full bg-dynastyLime rounded-full transition-all" style="width:0%"></span></div>
+                        </button>
+                    </div>
+                    <p id="family-person-summary-note" class="text-[10px] text-cocoa font-semibold mt-3">Для исторических SUMMARY-месяцев разделение по людям недоступно.</p>
                 </div>
             </div>
 
@@ -3956,7 +3967,48 @@
         let familyCustomPeriodStart = '';
         let familyCustomPeriodEnd = '';
         let familyFlowGrouping = 'month';
+        let familyChartView = 'flow';
+        let familySelectedCategoryDetails = '';
         let familyExpensePersonFilter = '';
+        const familyExpenseDashboardCache = new Map();
+        const familyExpenseDashboardCacheTimes = new Map();
+        const FAMILY_CACHE_TTL_MS = 10 * 60 * 1000; // на ручные изменения в Sheets есть явная кнопка «Обновить»
+        let familyExpenseLoadSequence = 0;
+
+        function invalidateFamilyExpenseDashboardCache() {
+            familyExpenseDashboardCache.clear();
+            familyExpenseDashboardCacheTimes.clear();
+        }
+
+        function refreshFamilyExpenseDashboard() {
+            invalidateFamilyExpenseDashboardCache();
+            return loadFamilyExpenseDashboard({force:true});
+        }
+
+        function familyDashboardCacheKey(range, previousRange, person) {
+            return [range.startDate, range.endDate, previousRange.startDate, previousRange.endDate, person || ''].join('|');
+        }
+
+        function familyApplyDashboardResponse(data, range, previousRange) {
+            familyExpenseData = {
+                summary: data.summary || {},
+                previousSummary: data.previousSummary || {},
+                operations: data.operations || [],
+                summaryRows: data.summaryRows || [],
+                monthlySeries: data.monthlySeries || [],
+                monthStates: data.monthStates || [],
+                partialSummaryMonths: data.partialSummaryMonths || [],
+                categories: data.categories || [],
+                categoryTotals: data.categoryTotals || [],
+                allowedTypes: data.allowedTypes || [],
+                allowedPersons: data.allowedPersons || ['Общее','Катя','Коля'],
+                personTotals: data.personTotals || { 'Общее': 0, 'Катя': 0, 'Коля': 0 },
+                selectedPerson: data.selectedPerson || familyExpensePersonFilter,
+                currentRange: range,
+                previousRange: previousRange
+            };
+            renderFamilyExpenseDashboard();
+        }
         let familyExpenseData = {
             summary: {},
             previousSummary: {},
@@ -4264,6 +4316,30 @@
             setFamilyExpensePeriodCurrent();
         }
 
+        function setFamilyChartView(view) {
+            if (view !== 'flow' && view !== 'people') return;
+            familyChartView = view;
+            const hasSummary = (familyExpenseData.monthlySeries || []).some(x => x.mode === 'SUMMARY');
+            if (view === 'people') {
+                setText('family-flow-chart-subtitle', 'Сравнение личных и общих расходов за выбранный период');
+            } else {
+                const subtitleMap = { month: 'месяцам', quarter: 'кварталам', year: 'годам' };
+                setText('family-flow-chart-subtitle', `Динамика доходов и расходов по ${subtitleMap[familyFlowGrouping]}${hasSummary ? ' · в SUMMARY-месяцах известны только расходы' : ''}`);
+            }
+            document.getElementById('family-flow-view')?.classList.toggle('hidden', view !== 'flow');
+            document.getElementById('family-people-view')?.classList.toggle('hidden', view !== 'people');
+            ['flow','people'].forEach(id => {
+                const btn = document.getElementById('family-chart-view-' + id);
+                if (!btn) return;
+                btn.classList.toggle('is-active', id === view);
+                btn.setAttribute('aria-pressed', String(id === view));
+            });
+            if (view === 'flow' && familyFlowChartInstance) {
+                // Chart.js calculates geometry incorrectly when its canvas was hidden.
+                requestAnimationFrame(() => familyFlowChartInstance?.resize());
+            }
+        }
+
         function setFamilyExpensePersonFilter(person) {
             const normalized = ['Катя','Коля','Общее'].includes(String(person || '')) ? String(person) : '';
             if (familyExpensePersonFilter === normalized) return;
@@ -4275,7 +4351,9 @@
         function updateFamilyPersonControls() {
             const map = { all: '', katya: 'Катя', kolya: 'Коля', common: 'Общее' };
             Object.entries(map).forEach(([id, value]) => {
-                document.getElementById(`family-person-btn-${id}`)?.classList.toggle('is-active', familyExpensePersonFilter === value);
+                const button = document.getElementById(`family-person-btn-${id}`);
+                button?.classList.toggle('is-active', familyExpensePersonFilter === value);
+                button?.setAttribute('aria-pressed', String(familyExpensePersonFilter === value));
             });
         }
 
@@ -4284,6 +4362,16 @@
             setText('family-person-katya-total', formatMoney(Number(totals['Катя']) || 0));
             setText('family-person-kolya-total', formatMoney(Number(totals['Коля']) || 0));
             setText('family-person-common-total', formatMoney(Number(totals['Общее']) || 0));
+            const maximum = Math.max(0, Number(totals['Катя']) || 0, Number(totals['Коля']) || 0, Number(totals['Общее']) || 0);
+            [['katya','Катя'],['kolya','Коля'],['common','Общее']].forEach(([id, person]) => {
+                const bar = document.getElementById('family-person-' + id + '-bar');
+                if (bar) bar.style.width = `${maximum > 0 ? Math.max(0, Math.min(100, (Number(totals[person]) || 0) / maximum * 100)) : 0}%`;
+            });
+            const indicator = document.getElementById('family-active-person-indicator');
+            if (indicator) {
+                indicator.classList.toggle('hidden', !familyExpensePersonFilter);
+                indicator.textContent = familyExpensePersonFilter ? `Фильтр: ${familyExpensePersonFilter} · нажми «Все» во вкладке «Кто сколько потратил», чтобы сбросить` : '';
+            }
             updateFamilyPersonControls();
             const note = document.getElementById('family-person-summary-note');
             if (note) {
@@ -4294,7 +4382,7 @@
             }
         }
 
-        async function loadFamilyExpenseDashboard() {
+        async function loadFamilyExpenseDashboard(options = {}) {
             if (!googleScriptUrl) {
                 showToast('Для семейных расходов нужно подключение к Google Таблице.', 'error');
                 return;
@@ -4302,9 +4390,21 @@
 
             const range = familyGetCurrentRange();
             const previousRange = familyGetPreviousRange(range);
+            // Не оставлять подробности другого периода на экране при перелистывании.
+            familyFlowSelectedBucket = '';
+            familyFlowSelectedCategory = '';
+            familySelectedCategoryDetails = '';
             const title = document.getElementById('family-period-title');
             if (title) title.textContent = familyRangeLabel(range, true);
             updateFamilyPeriodControls();
+
+            const cacheKey = familyDashboardCacheKey(range, previousRange, familyExpensePersonFilter);
+            const requestSeq = ++familyExpenseLoadSequence;
+            if (!options.force && familyExpenseDashboardCache.has(cacheKey) &&
+                Date.now() - (familyExpenseDashboardCacheTimes.get(cacheKey) || 0) < FAMILY_CACHE_TTL_MS) {
+                familyApplyDashboardResponse(familyExpenseDashboardCache.get(cacheKey), range, previousRange);
+                return;
+            }
 
             try {
                 const data = await familyApiPost({
@@ -4313,27 +4413,34 @@
                     endDate: range.endDate,
                     previousStartDate: previousRange.startDate,
                     previousEndDate: previousRange.endDate,
-                    person: familyExpensePersonFilter
+                    person: familyExpensePersonFilter,
+                    prefetchYear: (familyExpensePeriodMode === 'custom' && range.startDate.slice(0,4) !== range.endDate.slice(0,4))
+                        ? '' : range.startDate.slice(0,4)
                 });
-                familyExpenseData = {
-                    summary: data.summary || {},
-                    previousSummary: data.previousSummary || {},
-                    operations: data.operations || [],
-                    summaryRows: data.summaryRows || [],
-                    monthlySeries: data.monthlySeries || [],
-                    monthStates: data.monthStates || [],
-                    partialSummaryMonths: data.partialSummaryMonths || [],
-                    categories: data.categories || [],
-                    categoryTotals: data.categoryTotals || [],
-                    allowedTypes: data.allowedTypes || [],
-                    allowedPersons: data.allowedPersons || ['Общее','Катя','Коля'],
-                    personTotals: data.personTotals || { 'Общее': 0, 'Катя': 0, 'Коля': 0 },
-                    selectedPerson: data.selectedPerson || familyExpensePersonFilter,
-                    currentRange: range,
-                    previousRange: previousRange
-                };
-                renderFamilyExpenseDashboard();
+                familyExpenseDashboardCache.set(cacheKey, data);
+                familyExpenseDashboardCacheTimes.set(cacheKey, Date.now());
+                // Предзагружаем 12 месячных экранов из ОДНОГО ответа Google.
+                // Повторные переходы мгновенны, пока не изменились данные.
+                const packs = data.prefetchedPeriods || {};
+                Object.entries(packs).forEach(([month, pack]) => {
+                    const [yy, mm] = month.split('-').map(Number);
+                    const pr = familyGetPresetRange('month', new Date(yy, mm - 1, 1));
+                    const pp = familyGetPresetRange('month', new Date(yy, mm - 2, 1));
+                    const key = familyDashboardCacheKey(pr, pp, familyExpensePersonFilter);
+                    familyExpenseDashboardCache.set(key, {
+                        ...pack,
+                        categories: data.categories || [],
+                        allowedTypes: data.allowedTypes || [],
+                        allowedPersons: data.allowedPersons || ['Общее','Катя','Коля'],
+                        selectedPerson: familyExpensePersonFilter
+                    });
+                    familyExpenseDashboardCacheTimes.set(key, Date.now());
+                });
+                // Если пользователь успел переключить период, старый ответ не перерисовывает экран.
+                if (requestSeq !== familyExpenseLoadSequence) return;
+                familyApplyDashboardResponse(data, range, previousRange);
             } catch (error) {
+                if (requestSeq !== familyExpenseLoadSequence) return;
                 console.error(error);
                 showToast(error.message || 'Не удалось загрузить семейные расходы.', 'error');
             }
@@ -4358,6 +4465,7 @@
             renderFamilyComparison();
             renderFamilyCategoryBreakdown();
             renderFamilyFlowChart();
+            setFamilyChartView(familyChartView);
             populateFamilyFilters();
             populateFamilyOperationFormOptions();
             renderFamilyOperationsTable();
@@ -4444,6 +4552,8 @@
                 }
             }
 
+            renderFamilyCategoryDetails();
+
             if (familyCategoryChartInstance) {
                 familyCategoryChartInstance.destroy();
                 familyCategoryChartInstance = null;
@@ -4467,6 +4577,12 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '54%',
+                    onClick: (_event, elements) => {
+                        if (elements?.length) filterFamilyByCategory(totals[elements[0].index].category);
+                    },
+                    onHover: (event, elements) => {
+                        if (event.native?.target) event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                    },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
@@ -4482,6 +4598,7 @@
         function setFamilyFlowGrouping(grouping) {
             if (!['month','quarter','year'].includes(grouping)) return;
             familyFlowGrouping = grouping;
+            closeFamilyFlowDetails();
             renderFamilyFlowChart();
         }
 
@@ -4524,6 +4641,86 @@
                 else cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
             }
             return keys;
+        }
+
+        let familyFlowSelectedBucket = '';
+        let familyFlowSelectedCategory = '';
+        let familyFlowSelectedKind = 'expenses';
+
+        function familyFlowBucketExpenseMap(key, grouping, kind = 'expenses') {
+            const totals = new Map();
+            const dates = itemMonth => {
+                const value = familyIsoToDate(`${String(itemMonth || '').slice(0,7)}-01`);
+                return value ? familyFlowBucketKey(value, grouping) : '';
+            };
+            (kind === 'expenses' ? (familyExpenseData.summaryRows || []) : []).forEach(row => {
+                if (dates(row.Month) !== key) return;
+                const cat = String(row.Category || 'Прочее');
+                totals.set(cat, (totals.get(cat) || 0) + (Number(row.Amount) || 0));
+            });
+            (familyExpenseData.operations || []).forEach(op => {
+                if (kind === 'expenses' && !['Расход','Возврат покупки'].includes(op.OperationType)) return;
+                if (kind === 'income' && op.OperationType !== 'Доход') return;
+                if (dates(op.Month || String(op.Date || '').slice(0,7)) !== key) return;
+                const cat = String(op.Category || 'Прочее');
+                const sign = op.OperationType === 'Возврат покупки' ? -1 : 1;
+                totals.set(cat, (totals.get(cat) || 0) + sign * (Number(op.Amount) || 0));
+            });
+            return [...totals].map(([category, amount]) => ({category, amount})).filter(i=>i.amount!==0).sort((a,b)=>b.amount-a.amount);
+        }
+
+        function familyFlowBucketOperations(key, grouping, category, kind) {
+            return (familyExpenseData.operations || []).filter(op => {
+                if (kind === 'income' && op.OperationType !== 'Доход') return false;
+                if (kind === 'expenses' && !['Расход','Возврат покупки'].includes(op.OperationType)) return false;
+                const d = familyIsoToDate(`${String(op.Month || op.Date || '').slice(0,7)}-01`);
+                return d && familyFlowBucketKey(d, grouping) === key &&
+                    (!category || String(op.Category || 'Прочее') === category);
+            });
+        }
+
+        function openFamilyFlowDetails(key, kind = 'expenses') {
+            familyFlowSelectedBucket = key;
+            familyFlowSelectedKind = kind;
+            familyFlowSelectedCategory = '';
+            renderFamilyFlowDetails();
+            document.getElementById('family-flow-drilldown')?.scrollIntoView({behavior:'smooth', block:'nearest'});
+        }
+
+        function setFamilyFlowDetailCategory(category) {
+            familyFlowSelectedCategory = familyFlowSelectedCategory === category ? '' : category;
+            renderFamilyFlowDetails();
+        }
+
+        function closeFamilyFlowDetails() {
+            familyFlowSelectedBucket = '';
+            familyFlowSelectedCategory = '';
+            renderFamilyFlowDetails();
+        }
+
+        function renderFamilyFlowDetails() {
+            const root = document.getElementById('family-flow-drilldown');
+            if (!root) return;
+            const key = familyFlowSelectedBucket;
+            if (!key) { root.classList.add('hidden'); root.innerHTML = ''; return; }
+            const grouping = familyFlowGrouping;
+            const isIncome = familyFlowSelectedKind === 'income';
+            const all = familyFlowBucketExpenseMap(key, grouping, familyFlowSelectedKind);
+            const total = all.reduce((sum,r)=>sum+r.amount,0);
+            const ops = familyFlowBucketOperations(key, grouping, familyFlowSelectedCategory, familyFlowSelectedKind);
+            const summaries = (isIncome ? [] : (familyExpenseData.summaryRows || [])).filter(r => {
+                const d = familyIsoToDate(`${String(r.Month || '').slice(0,7)}-01`);
+                return d && familyFlowBucketKey(d, grouping) === key &&
+                    (!familyFlowSelectedCategory || String(r.Category || 'Прочее') === familyFlowSelectedCategory);
+            });
+            const name = familyFlowBucketLabel(key, grouping);
+            const catHtml = all.map(i => `<button type="button" class="family-category-row text-left w-full ${familyFlowSelectedCategory === i.category ? 'bg-dynastyPurple/10' : ''}" data-flow-category="${escapeAttrFamily(i.category)}"><span class="font-bold text-xs truncate">${escapeHtmlFamily(i.category)}</span><span class="font-black text-xs whitespace-nowrap">${formatMoney(i.amount)}</span></button>`).join('');
+            const detailHtml = ops.slice(0, 60).map(o => `<div class="flex justify-between items-start gap-3 py-2 border-b border-black/5"><div class="min-w-0"><p class="text-xs font-bold">${escapeHtmlFamily(o.Description || 'Операция')}</p><p class="text-[10px] text-cocoa">${escapeHtmlFamily(String(o.Date || '').slice(0,10))} · ${escapeHtmlFamily(o.Category || '')}${o.Person && o.Person!=='Общее' ? ` · ${escapeHtmlFamily(o.Person)}` : ''}</p></div><strong class="text-xs whitespace-nowrap">${o.OperationType === 'Возврат покупки' ? '−' : ''}${formatMoney(Number(o.Amount)||0)}</strong></div>`).join('');
+            const summaryHtml = summaries.map(r => `<div class="flex justify-between gap-3 text-xs py-2 border-b border-black/5"><span>${escapeHtmlFamily(r.Month)} · ${escapeHtmlFamily(r.Category)} <span class="text-cocoa">(SUMMARY)</span></span><strong>${formatMoney(Number(r.Amount)||0)}</strong></div>`).join('');
+            root.innerHTML = `<div class="flex flex-wrap justify-between items-center gap-2 mb-4"><div><p class="text-[10px] uppercase tracking-wider font-bold text-cocoa">${isIncome ? 'Доходы' : 'Расходы'} · расшифровка графика</p><h4 class="text-base font-black mt-1">${escapeHtmlFamily(name)} · ${formatMoney(total)}</h4></div><button type="button" class="text-xs font-bold px-3 py-2 rounded-xl border border-black/10" id="family-flow-close">Закрыть ×</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div><p class="text-[10px] uppercase font-bold text-cocoa mb-2">Категории · нажми для подробностей</p>${catHtml || '<p class="text-xs text-cocoa">Нет расходов за этот период.</p>'}</div><div><p class="text-[10px] uppercase font-bold text-cocoa mb-2">${familyFlowSelectedCategory ? escapeHtmlFamily(familyFlowSelectedCategory) : 'Все расходы'} · операции</p><div class="max-h-[330px] overflow-y-auto">${summaryHtml}${detailHtml}${ops.length > 60 ? '<p class="text-xs text-cocoa py-2">Показаны первые 60 операций.</p>' : ''}${!summaryHtml && !detailHtml ? '<p class="text-xs text-cocoa">Операций по выбранной категории нет.</p>' : ''}</div>${summaries.length ? '<p class="text-[10px] text-cocoa mt-2">SUMMARY: в историческом месяце нет детализации отдельных покупок.</p>' : ''}</div></div>`;
+            root.classList.remove('hidden');
+            root.querySelector('#family-flow-close')?.addEventListener('click', closeFamilyFlowDetails);
+            root.querySelectorAll('[data-flow-category]').forEach(b => b.addEventListener('click', () => setFamilyFlowDetailCategory(b.dataset.flowCategory)));
         }
 
         function renderFamilyFlowChart() {
@@ -4578,7 +4775,14 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
+                    // Выбираем конкретный столбец, чтобы доходы не открывали расходы и наоборот.
+                    interaction: { mode: 'nearest', intersect: true },
+                    onClick: (_event, elements) => {
+                        if (elements?.length) openFamilyFlowDetails(orderedKeys[elements[0].index], elements[0].datasetIndex === 1 ? 'income' : 'expenses');
+                    },
+                    onHover: (event, elements) => {
+                        if (event.native?.target) event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                    },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#7A6E67', font: { size: 10, weight: '700' }, maxRotation: 45, minRotation: 0 } },
                         y: { beginAtZero: true, grid: { color: 'rgba(11,11,14,.055)' }, ticks: { color: '#7A6E67', font: { size: 10, weight: '700' }, callback: value => Number(value).toLocaleString('ru-RU', { notation: 'compact', maximumFractionDigits: 1 }) + ' ₽' } }
@@ -4587,7 +4791,14 @@
                         legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, color: '#0B0B0E', font: { size: 11, weight: '700' } } },
                         tooltip: {
                             callbacks: {
-                                label: context => context.raw === null ? `${context.dataset.label}: нет данных в SUMMARY` : `${context.dataset.label}: ${formatMoney(context.raw || 0)}`
+                                label: context => context.raw === null ? `${context.dataset.label}: нет данных в SUMMARY` : `${context.dataset.label}: ${formatMoney(context.raw || 0)}`,
+                                afterBody: items => {
+                                    if (!items.length) return [];
+                                    const group = orderedKeys[items[0].dataIndex];
+                                    const incomeSeries = items[0].datasetIndex === 1;
+                                    const top = familyFlowBucketExpenseMap(group, familyFlowGrouping, incomeSeries ? 'income' : 'expenses').slice(0, 5);
+                                    return top.length ? ['', incomeSeries ? 'Основные доходы:' : 'Основные расходы:', ...top.map(x => `  ${x.category}: ${formatMoney(x.amount)}`), 'Нажми на столбец для деталей'] : ['Нажми на столбец для деталей'];
+                                }
                             }
                         }
                     }
@@ -4635,10 +4846,51 @@
         }
 
         function filterFamilyByCategory(category) {
+            const chosen = String(category || '');
+            familySelectedCategoryDetails = familySelectedCategoryDetails === chosen ? '' : chosen;
             const select = document.getElementById('family-filter-category');
-            if (select) select.value = category;
+            if (select) select.value = familySelectedCategoryDetails;
             renderFamilyOperationsTable();
-            document.getElementById('family-history-subtitle')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            renderFamilyCategoryDetails();
+            if (familySelectedCategoryDetails) {
+                document.getElementById('family-category-details')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+            }
+        }
+
+        function renderFamilyCategoryDetails() {
+            const root = document.getElementById('family-category-details');
+            if (!root) return;
+            const category = familySelectedCategoryDetails;
+            if (!category) { root.classList.add('hidden'); root.innerHTML = ''; return; }
+            const ops = (familyExpenseData.operations || []).filter(op =>
+                String(op.Category || 'Прочее') === category && ['Расход','Возврат покупки'].includes(String(op.OperationType || ''))
+            ).sort((a,b) => String(b.Date || '').localeCompare(String(a.Date || '')));
+            const summaries = (familyExpenseData.summaryRows || []).filter(row => String(row.Category || 'Прочее') === category);
+            const detailTotal = ops.reduce((sum, op) => sum + (op.OperationType === 'Возврат покупки' ? -1 : 1) * (Number(op.Amount) || 0), 0);
+            const summaryTotal = summaries.reduce((sum,row) => sum + (Number(row.Amount) || 0), 0);
+            const opHtml = ops.slice(0, 70).map(op => {
+                const amount = Number(op.Amount) || 0;
+                const signed = op.OperationType === 'Возврат покупки' ? '−' : '';
+                return `<div class="py-2.5 flex justify-between items-start gap-3 border-b border-black/5">
+                    <div class="min-w-0"><p class="text-xs font-extrabold text-dynastyBlack">${escapeHtmlFamily(op.Description || 'Покупка')}</p>
+                    <p class="text-[10px] mt-1 text-cocoa font-semibold">${escapeHtmlFamily(formatDateStr(op.Date))} · ${escapeHtmlFamily(op.Subcategory || op.Source || 'Расход')}${op.Person && op.Person !== 'Общее' ? ' · ' + escapeHtmlFamily(op.Person) : ''}</p></div>
+                    <strong class="text-xs font-black whitespace-nowrap">${signed}${formatMoney(amount)}</strong>
+                </div>`;
+            }).join('');
+            const summaryHtml = summaries.map(row => `<div class="flex justify-between gap-3 border-b border-black/5 py-2 text-xs"><div class="min-w-0"><b>${escapeHtmlFamily(familyMonthCompactLabel(row.Month))}</b><span class="text-cocoa"> · историческая сводка, без операций</span></div><strong class="whitespace-nowrap">${formatMoney(Number(row.Amount) || 0)}</strong></div>`).join('');
+            root.innerHTML = `<div class="flex items-start justify-between gap-3 mb-3"><div class="min-w-0"><p class="text-[10px] uppercase font-extrabold text-cocoa">Детализация категории</p><h4 class="font-black text-base text-dynastyBlack mt-1">${escapeHtmlFamily(category)} · ${formatMoney(detailTotal + summaryTotal)}</h4></div><button type="button" id="family-category-close" class="px-3 py-2 rounded-xl border border-black/10 text-xs font-bold" aria-label="Скрыть детали категории">Закрыть ×</button></div>
+                ${summaryHtml}
+                ${opHtml}
+                ${ops.length > 70 ? '<p class="text-[10px] text-cocoa font-semibold mt-2">Первые 70 операций. Полный список ниже в истории расходов.</p>' : ''}
+                ${!summaryHtml && !opHtml ? '<p class="text-xs text-cocoa">Для категории нет записей за выбранный период.</p>' : ''}`;
+            root.classList.remove('hidden');
+            root.querySelector('#family-category-close')?.addEventListener('click', () => {
+                familySelectedCategoryDetails = '';
+                const select = document.getElementById('family-filter-category');
+                if (select) select.value = '';
+                renderFamilyOperationsTable();
+                renderFamilyCategoryDetails();
+            });
         }
 
         function getFilteredFamilyOperations() {
@@ -4885,7 +5137,8 @@
                 await familyApiPost(payload);
                 closeFamilyOperationModal();
                 showToast(wasEditing ? 'Операция обновлена.' : 'Операция добавлена.', 'success');
-                await loadFamilyExpenseDashboard();
+                invalidateFamilyExpenseDashboardCache();
+                await loadFamilyExpenseDashboard({ force: true });
             } catch (error) {
                 console.error(error);
                 showToast(error.message || 'Не удалось сохранить операцию.', 'error');
@@ -4898,7 +5151,8 @@
                     await familyApiPost({ action: 'expenseDeleteOperation', id });
                     closeFamilyOperationModal();
                     showToast('Операция удалена.', 'success');
-                    await loadFamilyExpenseDashboard();
+                    invalidateFamilyExpenseDashboardCache();
+                    await loadFamilyExpenseDashboard({ force: true });
                 } catch (error) {
                     showToast(error.message || 'Не удалось удалить операцию.', 'error');
                 }
@@ -5051,7 +5305,8 @@
                 });
                 closeFamilyHistoricalImportModal();
                 showToast(`Историческая сводка импортирована: ${result.importedRows || 0} строк.`, 'success');
-                await loadFamilyExpenseDashboard();
+                invalidateFamilyExpenseDashboardCache();
+                await loadFamilyExpenseDashboard({ force: true });
             } catch (error) {
                 console.error(error);
                 showToast(error.message || 'Исторический импорт не выполнен.', 'error');
@@ -5227,6 +5482,9 @@
             const btn = document.getElementById('family-import-confirm-btn');
             if (btn) { btn.disabled = true; btn.textContent = 'Импортируем…'; }
 
+            // Сохраняем месяцы предпросмотра до закрытия модалки.
+            const previewMonths = [...(pendingFamilyImport.preview?.months || [])];
+
             try {
                 const result = await familyApiPost({
                     action: 'expenseImportConfirm',
@@ -5235,10 +5493,25 @@
                     fileName: pendingFamilyImport.file.name,
                     replaceSummary: document.getElementById('family-detail-replace-summary')?.checked || false
                 });
+                const importedMonths = (result.months?.length ? result.months : previewMonths).filter(Boolean);
                 closeFamilyImportModal();
+                invalidateFamilyExpenseDashboardCache();
+
                 const replaced = (result.replacedMonths || []).length ? ` SUMMARY заменён на DETAIL: ${result.replacedMonths.map(familyMonthCompactLabel).join(', ')}.` : '';
                 showToast(`Импортировано операций: ${result.importedRows || 0}.${replaced}`, 'success');
-                await loadFamilyExpenseDashboard();
+
+                // Если файл относится к одному месяцу (типичный ежемесячный импорт),
+                // сразу показываем именно его. Раньше после импорта июля сайт оставался,
+                // например, на октябре — поэтому казалось, что данные "не появились".
+                if (importedMonths.length === 1 && /^\d{4}-\d{2}$/.test(importedMonths[0])) {
+                    const [y, m] = importedMonths[0].split('-').map(Number);
+                    familyExpensePeriodMode = 'month';
+                    familyExpensePeriodAnchor = new Date(y, m - 1, 1);
+                    familyExpenseMonth = importedMonths[0];
+                    updateFamilyPeriodControls();
+                }
+
+                await loadFamilyExpenseDashboard({ force: true });
             } catch (error) {
                 console.error(error);
                 showToast(error.message || 'Импорт не выполнен.', 'error');
@@ -5303,7 +5576,8 @@
                 document.getElementById('family-new-category').value = '';
                 document.getElementById('family-new-subcategory').value = '';
                 await refreshFamilyCategoriesManager();
-                await loadFamilyExpenseDashboard();
+                invalidateFamilyExpenseDashboardCache();
+                await loadFamilyExpenseDashboard({ force: true });
                 showToast('Категория добавлена.', 'success');
             } catch (error) {
                 showToast(error.message || 'Не удалось добавить категорию.', 'error');
@@ -5314,7 +5588,8 @@
             try {
                 await familyApiPost({ action: 'expenseUpdateCategory', id, active });
                 await refreshFamilyCategoriesManager();
-                await loadFamilyExpenseDashboard();
+                invalidateFamilyExpenseDashboardCache();
+                await loadFamilyExpenseDashboard({ force: true });
             } catch (error) {
                 showToast(error.message || 'Не удалось изменить категорию.', 'error');
             }
